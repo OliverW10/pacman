@@ -1,0 +1,224 @@
+from os import kill
+import random
+from mover import Mover
+from util import Direction
+from pacman import Pacman
+from level import Tile
+from typing import Tuple, List, Callable
+from enum import Enum, auto
+import pygame
+import math
+import time
+
+
+class GhostMode(Enum):
+    CHASE = 20
+    SCATTER = 10
+    RUN = 7
+
+class BaseGhost(Mover):
+    def __init__(self, x, y):
+        super().__init__(x, y, 5.5)
+        self.colour = (255, 0, 0)
+        self.cur_colour = self.colour
+        self.start_x = x
+        self.start_y = y
+        self.dead = True
+        self.pen_timer = 5
+
+    def setup(self):
+        self.cornercut = 0.05
+        self.last_direction = self.direction
+
+    def step(self, dt: float, level_map: List[List[Tile]]):
+        if not self.dead:
+            super().step(dt, level_map)
+        else:
+            self.pen_timer -= dt
+            if self.pen_timer < 0:
+                self.dead = False
+                self.pen_timer = 5
+
+    # called by mover class every frame
+    def check_new_direction(self, tile_map) -> Direction:
+        available = self.get_avalible_directions(tile_map)
+        # stop turning around
+        for direction in [self.direction, self.last_direction]:
+            try:
+                available.remove(direction.inverse())
+            except ValueError:
+                pass
+        self.last_direction = self.direction
+        return self.get_new_direction(available)
+    
+    def get_new_direction(self, available: List[Direction]) -> Direction:
+        return random.choice(available)
+
+    def check_collisions(self, other: 'Mover'):
+        if not self.dead and super().check_collisions(other):
+            self.x = self.start_x
+            self.y = self.start_y
+            self.dead = True
+            return True
+        return False
+
+    def draw(self, screen: pygame.Surface, offset: Tuple[int, int], grid_size: int):
+        pygame.draw.circle(
+            screen,
+            self.cur_colour,
+            (
+                round(offset[0] + grid_size * self.x),
+                round(offset[1] + grid_size * self.y),
+            ),
+            grid_size * 0.7,
+        )
+
+class ClassicGhost(BaseGhost):
+    def setup(self):
+        super().setup()
+        self.goal = (0, 0)
+
+    # called whenever there are more than one possible directions to go
+    def get_new_direction(self, available: List[Direction]) -> Direction:
+        # pick closest
+        best = Direction.NONE
+        best_dist = 999999
+        for i in available:
+            dist = (self.goal[0] - (self.x + i.value[0])) ** 2 + (
+                self.goal[1] - (self.y + i.value[1])
+            ) ** 2
+            if dist < best_dist:
+                best = i
+                best_dist = dist
+        return best
+
+    def set_goal(self, goal: Tuple[int, int]):
+        self.goal = goal
+    
+    def draw(self, screen: pygame.Surface, offset: Tuple[int, int], grid_size: int):
+        super().draw(screen, offset, grid_size)
+        pygame.draw.circle(
+            screen,
+            (0, 255, 0),
+            (
+                round(offset[0] + grid_size * self.goal[0]),
+                round(offset[1] + grid_size * self.goal[1]),
+            ),
+            grid_size * 0.3,
+        )
+    
+
+class Blinky(ClassicGhost):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.colour = (255, 0, 0)
+        self.pen_timer = 1
+
+class Inky(ClassicGhost):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.colour = (0, 255, 255)
+        self.pen_timer = 5
+
+class Pinky(ClassicGhost):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.colour = (255, 0, 255)
+        self.pen_timer = 9
+
+class Clyde(ClassicGhost):
+    def __init__(self, x, y):
+        super().__init__(x, y)
+        self.colour = (255, 160, 0)
+        self.pen_timer = 13
+
+
+class GhostSystem:
+    def __init__(self, ghost_start: Tuple[int, int]):
+        self.ghosts: List[BaseGhost] = []
+        self.ghost_mode = GhostMode.CHASE
+        self.speed_mult = 1
+        self.ghost_start = ghost_start
+        self.mode_timer = time.time()
+
+    def set_mode(self, mode: GhostMode):
+        self.ghost_mode = mode
+        self.mode_timer = time.time()
+
+    def draw(self, screen, offset, grid_size):
+        for ghost in self.ghosts:
+            ghost.draw(screen, offset, grid_size)
+        
+    def step(self, dt: float, level_map: List[List[Tile]], pacman: Pacman):
+        if time.time()-self.mode_timer > self.ghost_mode.value:
+            if self.ghost_mode is GhostMode.RUN:
+                self.set_mode(GhostMode.CHASE)
+            if self.ghost_mode is GhostMode.CHASE:
+                self.set_mode(GhostMode.SCATTER)
+            if self.ghost_mode is GhostMode.SCATTER:
+                self.set_mode(GhostMode.CHASE)
+        
+        if self.ghost_mode is GhostMode.RUN:
+            self.speed_mult = 0.5
+        else:
+            self.speed_mult = 1
+
+        for ghost in self.ghosts:
+            if self.ghost_mode is GhostMode.RUN:
+                ghost.cur_colour = (0, 0, 255)
+            else:
+                ghost.cur_colour = ghost.colour
+            ghost.step(dt*self.speed_mult, level_map)
+
+    def reset(self):
+        self.__init__(self.ghost_start)
+
+
+class ClassicGhostSystem(GhostSystem):
+    def __init__(self, ghost_start: Tuple[int, int]):
+        super().__init__(ghost_start)
+        self.ghosts: List[ClassicGhost] = [
+            Blinky(*ghost_start),
+            Inky(*ghost_start),
+            Pinky(*ghost_start),
+            Clyde(*ghost_start),
+        ]
+        self.blinky = self.ghosts[0]
+        self.inky = self.ghosts[1]
+        self.pinky = self.ghosts[2]
+        self.clyde = self.ghosts[3]
+    
+    
+    def step(self, dt: float, level_map: List[List[Tile]], pacman: Pacman):
+        super().step(dt, level_map, pacman)
+        if self.ghost_mode is GhostMode.CHASE:
+            self.blinky.set_goal((pacman.x, pacman.y))
+            self.pinky.set_goal(
+                (
+                    pacman.x + pacman.last_move.value[0] * 4,
+                    pacman.y + pacman.last_move.value[1] * 4,
+                )
+            )
+            inky_pacman_goal = (
+                pacman.x + pacman.direction.value[0] * 2,
+                pacman.y + pacman.direction.value[1] * 2,
+            )
+            blinky_offset = (
+                inky_pacman_goal[0] - self.blinky.x,
+                inky_pacman_goal[1] - self.blinky.y,
+            )
+            self.inky.set_goal(
+                (
+                    inky_pacman_goal[0] + blinky_offset[0],
+                    inky_pacman_goal[1] + blinky_offset[1],
+                )
+            )
+            if math.hypot(self.clyde.x-pacman.x, self.clyde.y-pacman.y) > 8:
+                self.clyde.set_goal((pacman.x, pacman.y))
+            else:
+                self.clyde.set_goal((1, 32))
+        else:
+            self.blinky.set_goal((26, -3))
+            self.pinky.set_goal((1, -3))
+            self.inky.set_goal((28, 32))
+            self.clyde.set_goal((1, 32))
