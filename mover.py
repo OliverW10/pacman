@@ -1,4 +1,4 @@
-from level import Tile, is_wall
+from level import Tile, get_available_directions, is_wall
 from util import rate_limit, ALL_DIRECTIONS, Direction
 from typing import List
 import math
@@ -14,7 +14,6 @@ class Mover:
         self.speed = speed
         # should be overwritten by sub classes
         self.cornercut = 0.5
-        self.setup()
 
     def step(self, dt, level_map: List[List[Tile]]):
         self.x += self.direction.value[0] * dt * self.speed
@@ -27,7 +26,7 @@ class Mover:
         if abs(self.direction.value[1]) == 0:
             self.y = rate_limit(self.y, math.floor(self.y) + 0.5, self.speed * dt)
 
-        avalible_directions = self.get_avalible_directions(level_map)
+        avalible_directions = get_available_directions(level_map, (self.x, self.y))
         if self.direction not in avalible_directions:
             self.direction = Direction.NONE
 
@@ -42,15 +41,6 @@ class Mover:
         # looping
         self.x = self.x % len(level_map[0])
         self.y = self.y % len(level_map)
-
-    def get_avalible_directions(self, level_map: List[List[Tile]]):
-        tile_x = math.floor(self.x)
-        tile_y = math.floor(self.y)
-        return [
-            d
-            for d in ALL_DIRECTIONS
-            if not is_wall(level_map, tile_x + d.value[0], tile_y + d.value[1])
-        ]
 
     def check_collisions(self, other: "Mover"):
         return (
@@ -67,10 +57,7 @@ class Mover:
 
     # to be implimented by sub classes
     def check_new_direction(self, _) -> Direction:
-        ...
-
-    def setup(self):
-        ...
+        raise NotImplementedError
 
     def draw(self, screen, offset, grid_size):
-        ...
+        raise NotImplementedError

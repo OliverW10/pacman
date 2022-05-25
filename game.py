@@ -21,7 +21,7 @@ class Game:
         self.start_tilemap = tilemap
         self.pacman = Pacman(pacman_start[0], pacman_start[1], 6)
         self.pacman_start = pacman_start
-        self.ghosts_system = ClassicGhostSystem((14, 11.5))
+        self.ghosts_system = LookaheadGhostSystem((14, 11.5))
         self.ghost_start = ghost_start
         self.ghost_ate_time = 0
         self.dying = False
@@ -84,6 +84,7 @@ class Game:
         # self.pacman.draw(self.screen, (400 - grid_size * 14, 25), grid_size)
         self.pacman.draw(screen, (x, y), grid_size)
         self.ghosts_system.draw(screen, (x, y), grid_size)
+        pygame.display.update((x, y, w, h))
 
 
 if __name__ == "__main__":
@@ -93,15 +94,22 @@ if __name__ == "__main__":
     # setup pygame
     pygame.init()
     pygame.display.set_caption("Test caption")
+    pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN])
     screen = pygame.display.set_mode((800, 600))
-
+    fps_ticker = 0
     while running:
         dt = time.time() - last_frame_time
         last_frame_time = time.time()
+        fps_ticker += 1
+        if fps_ticker > 100:
+            print(f"fps: {1/dt}, step time ms: {step_time*1000}")
+            fps_ticker = 0
         for event in pygame.event.get(pygame.QUIT):
             if event.type == pygame.QUIT:
                 running = False
+        step_start = time.perf_counter()
         game.step(dt)
+        step_time = time.perf_counter() - step_start
         grid_size = 16
         screen.fill((0, 0, 0))
         game.draw(
@@ -111,4 +119,3 @@ if __name__ == "__main__":
             28 * grid_size,
             31 * grid_size,
         )
-        pygame.display.flip()

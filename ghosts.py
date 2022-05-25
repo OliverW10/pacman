@@ -1,9 +1,9 @@
 from os import kill
 import random
 from mover import Mover
-from util import Direction
+from util import Direction, center, to_screen
 from pacman import Pacman
-from level import Tile
+from level import Tile, TileMap, get_available_directions
 from typing import Tuple, List, Callable
 from enum import Enum, auto
 import pygame
@@ -25,8 +25,6 @@ class BaseGhost(Mover):
         self.start_y = y
         self.dead = True
         self.pen_timer = 5
-
-    def setup(self):
         self.cornercut = 0.05
         self.last_direction = self.direction
 
@@ -40,18 +38,19 @@ class BaseGhost(Mover):
                 self.pen_timer = 5
 
     # called by mover class every frame
-    def check_new_direction(self, tile_map) -> Direction:
-        available = self.get_avalible_directions(tile_map)
+    def check_new_direction(self, tile_map: TileMap) -> Direction:
+        available = get_available_directions(tile_map, [self.x, self.y])
         # stop turning around
         for direction in [self.direction, self.last_direction]:
             try:
                 available.remove(direction.inverse())
             except ValueError:
                 pass
-        self.last_direction = self.direction
-        return self.get_new_direction(available)
-    
-    def get_new_direction(self, available: List[Direction]) -> Direction:
+        if self.direction != Direction.NONE:
+            self.last_direction = self.direction
+        return self.get_new_direction(available, tile_map)
+ 
+    def get_new_direction(self, available: List[Direction], *args) -> Direction:
         return random.choice(available)
 
     def check_collisions(self, other: 'Mover'):
@@ -74,12 +73,11 @@ class BaseGhost(Mover):
         )
 
 class ClassicGhost(BaseGhost):
-    def setup(self):
-        super().setup()
+    def __init__(self, x, y):
+        super().__init__(x, y)
         self.goal = (0, 0)
-
     # called whenever there are more than one possible directions to go
-    def get_new_direction(self, available: List[Direction]) -> Direction:
+    def get_new_direction(self, available: List[Direction], level_map) -> Direction:
         # pick closest
         best = Direction.NONE
         best_dist = 999999
@@ -106,6 +104,44 @@ class ClassicGhost(BaseGhost):
             ),
             grid_size * 0.3,
         )
+
+        for g1, g2 in zip(self.path, self.path[1:]):
+            p1 = to_screen(center(g1), offset, grid_size)
+            p2 = to_screen(center(g2), offset, grid_size)
+            # pygame.draw.line(screen, self.colour, p1, p2, 3)
+    
+    def step(self, dt, level_map):
+        super().step(dt, level_map)
+
+        # create path[], not actually used for pathfinding
+        self.path = []
+        pos = (math.floor(self.x), math.floor(self.y))
+        direction = self.direction
+        last_direction = self.last_direction
+        iters = 0
+        while not pos == self.goal and iters < 100:
+            available = get_available_directions(level_map, pos)
+            for dirc in [direction, last_direction]:
+                try:
+                    available.remove(dirc.inverse())
+                except ValueError:
+                    pass
+            # pick best direction
+            if len(available) == 0:
+                print(get_available_directions(level_map, pos))
+            else:
+                direction = min(
+                    available,
+                    key=lambda x: math.hypot(
+                        pos[0] + x.value[0] - self.goal[0],
+                        pos[1] + x.value[1] - self.goal[1],
+                    ),
+                )
+            pos = (pos[0]+direction.value[0], pos[1]+direction.value[1]) 
+            self.path.append(pos)
+            if not direction is Direction.NONE:
+                last_direction = direction
+            iters += 1
     
 
 class Blinky(ClassicGhost):
