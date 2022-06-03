@@ -3,8 +3,9 @@ from typing import List, Tuple
 import pygame
 import time
 from copy import deepcopy
-from ai import LookaheadGhostSystem
+from basic_ai import LookaheadGhostSystem
 from level import Tile, TileMap, classic_map, draw_map
+from pacman_ai import RandomPacman
 from util import Direction, Grid2d
 from pacman import Pacman
 from ghosts import ClassicGhostSystem, BaseGhost, GhostMode

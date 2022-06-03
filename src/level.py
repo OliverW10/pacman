@@ -52,9 +52,9 @@ print("w", len(classic_map[0]), ", h", len(classic_map))
 classic_map = [list(map(Tile, row)) for row in classic_map]
 
 # edge safe
-def is_wall(tilemap, x, y):
+def is_wall(tilemap, x, y, outside_val=False):
     if x < 0 or x >= len(tilemap[0]) or y < 0 or y >= len(tilemap):
-        return True
+        return outside_val
     else:
         return tilemap[y][x] in [Tile.WALL]
 
@@ -62,8 +62,9 @@ def nearest_free(tilemap, x, y):
     goal = [x, y]
     all_dirs = list(set(permutations((0, 1, 1, -1, -1), 2)))
     i = 0
-    while is_wall(tilemap, goal[0], goal[1]):
+    while is_wall(tilemap, goal[0], goal[1], outside_val=True):
         if i >= len(all_dirs):
+            print(x, y)
             raise ValueError
         goal[0] = x + all_dirs[i][0] 
         goal[1] = y + all_dirs[i][1] 

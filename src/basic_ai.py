@@ -81,7 +81,7 @@ class LookaheadGhost(BaseGhost):
         # restore square behind us
         level_map[last_y][last_x] = temp
         # find direction from path
-        if len(self.path) == 0:
+        if len(self.path) <= 1:
             print("no path")
             return random.choice(available)
         diff = (self.path[1][0]-x, self.path[1][1]-y)
@@ -110,6 +110,8 @@ class LookaheadGhostSystem(GhostSystem):
         ]
         self.pacman_trees: List[List[TreeNode]] = []
         self.look_ahead = 5
+        # ghosts wont set goals within this dist of each other
+        self.wipeout_dist = 4
         self.level_size = (0, 0)
 
     def step(self, dt: float, level_map: List[List[Tile]], pacman: Pacman):
@@ -126,13 +128,13 @@ class LookaheadGhostSystem(GhostSystem):
         pacman_tree_ahead = create_tree(
             level_map,
             (math.floor(pacman.x), math.floor(pacman.y)),
-            math.floor(closest_dist * 0.5),
+            math.floor(closest_dist * 1.3),
             pacman.direction,
         )
         pacman_tree_all = create_tree(
             level_map,
             (math.floor(pacman.x), math.floor(pacman.y)),
-            math.floor(closest_dist * 0.2),
+            math.floor(closest_dist * 0.5),
         )
         self.pacman_trees = [pacman_tree_ahead, pacman_tree_all]
         # pick goals for ghosts
@@ -140,7 +142,7 @@ class LookaheadGhostSystem(GhostSystem):
         used_ghosts = []
         # all tails of possible paths pacman can take
         _all_ends = [x[-1] for x in self.pacman_trees]
-        all_ends = []
+        all_ends: List[TreeNode] = []
         for x in _all_ends:
             all_ends.extend(x)
         # print(all_ends)
@@ -159,6 +161,7 @@ class LookaheadGhostSystem(GhostSystem):
                 break
             # find ghost closest to a pacman path
             best_dist = 99999
+            # path idx, ghost idx
             best = (-1, -1)
             for gh_idx, ghost in enumerate(avalible_ghosts):
                 for path_idx, end in enumerate(avalible_ends):
@@ -167,6 +170,9 @@ class LookaheadGhostSystem(GhostSystem):
                         best_dist = dist
                         best = (path_idx, gh_idx)
             used_paths.append(best[0])
+            for idx, p in enumerate(avalible_ends):
+                if math.hypot(avalible_ends[best[0]].pos[0]-p.pos[0], avalible_ends[best[0]].pos[1]-p.pos[1]) < 3:
+                    used_paths.append(idx)
             used_ghosts.append(best[1])
             avalible_ghosts[best[1]].set_goal(avalible_ends[best[0]].pos, level_map)
 
@@ -205,12 +211,12 @@ class LookaheadGhostSystem(GhostSystem):
                 screen,
                 (0, 255, 0),
                 to_screen(center(node.pos), offset, grid_size),
-                grid_size * 0.5,
+                grid_size * 0.3,
             )
 
     def draw(self, screen: pygame.Surface, offset: Grid2d, grid_size: int):
         super().draw(screen, offset, grid_size)
-        for tree in self.pacman_trees:
-            self.draw_tree(screen, offset, grid_size, tree, (255, 200, 100))
+        # for tree in self.pacman_trees:
+        #     self.draw_tree(screen, offset, grid_size, tree, (255, 200, 100))
         # if random.random() > 0.9:
         #     print(len(self.pacman_tree[-1]))
