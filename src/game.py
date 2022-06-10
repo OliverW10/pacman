@@ -3,27 +3,25 @@ from typing import List, Tuple
 import pygame
 import time
 from copy import deepcopy
-from basic_ai import LookaheadGhostSystem
+from ai import PredictGhostSystem
 from level import Tile, TileMap, classic_map, draw_map
 from pacman_ai import RandomPacman
 from util import Direction, Grid2d
 from pacman import Pacman
-from ghosts import ClassicGhostSystem, BaseGhost, GhostMode
+from ghosts import ClassicGhostSystem, BaseGhost, GhostMode, GhostSystem
 
 
 class Game:
     def __init__(
         self,
         tilemap: TileMap,
-        pacman_start: Grid2d,
-        ghost_start: Grid2d,
+        pacman: Pacman,
+        ghosts: GhostSystem,
     ):
         self.tilemap = deepcopy(tilemap)
         self.start_tilemap = tilemap
-        self.pacman = Pacman(pacman_start[0], pacman_start[1], 6)
-        self.pacman_start = pacman_start
-        self.ghosts_system = LookaheadGhostSystem((14, 11.5))
-        self.ghost_start = ghost_start
+        self.pacman = pacman
+        self.ghosts_system = ghosts
         self.ghost_ate_time = 0
         self.dying = False
         self.ghost_streak = 0
@@ -89,34 +87,45 @@ class Game:
 
 
 if __name__ == "__main__":
-    game = Game(classic_map, (14, 23.5), (14, 11.5))
+    # create game instance
+    pacman = Pacman(14, 23.5, 6)
+    ghosts = PredictGhostSystem((14, 11.5))
+    game = Game(classic_map, pacman, ghosts)
+
     running = True
+    debug = False
     last_frame_time = time.time()
+
     # setup pygame
     pygame.init()
     pygame.display.set_caption("Test caption")
     pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN])
     screen = pygame.display.set_mode((800, 600))
     fps_ticker = 0
+    grid_size = 16
+
     while running:
+        # get delta time
         dt = time.time() - last_frame_time
         last_frame_time = time.time()
+        # print out fps every hundred frames
         fps_ticker += 1
         if fps_ticker > 100:
-            print(f"fps: {1/dt}, step time ms: {step_time*1000}")
+            print(f"fps: {1/dt}")
             fps_ticker = 0
+
+        # quit on quit event
         for event in pygame.event.get(pygame.QUIT):
             if event.type == pygame.QUIT:
                 running = False
-        step_start = time.perf_counter()
-        game.step(dt)
-        step_time = time.perf_counter() - step_start
-        grid_size = 16
-        screen.fill((0, 0, 0))
-        game.draw(
-            screen,
-            400 - 14 * grid_size,
-            300 - 15 * grid_size,
-            28 * grid_size,
-            31 * grid_size,
-        )
+
+        if not debug:
+            game.step(dt)
+            screen.fill((0, 0, 0))
+            game.draw(
+                screen,
+                400 - 14 * grid_size,
+                300 - 15 * grid_size,
+                28 * grid_size,
+                31 * grid_size,
+            )

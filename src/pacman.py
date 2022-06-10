@@ -4,13 +4,17 @@ from level import Tile
 from typing import Tuple, List
 import pygame
 
+
 class Pacman(Mover):
     def __init__(self, x, y, speed):
         super().__init__(x, y, speed)
         self.last_pressed = Direction.NONE
-        self.last_move = Direction.RIGHT # last direction that wasnt none, for pinky
-        self.cornercut = 0.5
+        self.last_move = Direction.RIGHT  # last direction that wasnt none, for pinky
         self.score = 0
+
+    @property
+    def cornercut(self) -> float:
+        return 0.5
 
     def draw(self, screen, offset: Tuple[int, int], grid_size: int):
         pygame.draw.circle(
@@ -36,7 +40,7 @@ class Pacman(Mover):
                     self.last_pressed = Direction.UP
                 if event.key == pygame.K_DOWN:
                     self.last_pressed = Direction.DOWN
-        
+
         if not self.direction is Direction.NONE:
             self.last_move = self.direction
 

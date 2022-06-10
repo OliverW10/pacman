@@ -26,12 +26,13 @@ class MazeSolver(AStar):
         return 1
 
     def neighbors(self, node):
-        """ for a given coordinate in the maze, returns up to 4 adjacent(north,east,south,west)
-            nodes that can be reached (=any adjacent coordinate that is not a wall)
+        """for a given coordinate in the maze, returns up to 4 adjacent(north,east,south,west)
+        nodes that can be reached (=any adjacent coordinate that is not a wall)
         """
         x, y = node
         possible_neighbors = [(x, y - 1), (x, y + 1), (x - 1, y), (x + 1, y)]
-        return[n for n in possible_neighbors if not is_wall(self.maze, n[0], n[1])]
+        return [n for n in possible_neighbors if not is_wall(self.maze, n[0], n[1])]
+
 
 def pathfind(maze: List[List[Tile]], start: Grid2d, end: Grid2d):
     return list(MazeSolver(maze).astar(start, end))

@@ -2,18 +2,26 @@ from level import Tile, get_available_directions, is_wall
 from util import rate_limit, ALL_DIRECTIONS, Direction
 from typing import List
 import math
+import abc
 
 # base class for object that moves around a maze
 class Mover:
+    __metaclass__ = abc.ABCMeta
+
     def __init__(self, x, y, speed):
         self.x = x
         self.y = y
         self.start_x = x
         self.start_y = y
         self.direction = Direction.RIGHT
+        self.last_direction = Direction.RIGHT  # last non None direction
         self.speed = speed
-        # should be overwritten by sub classes
-        self.cornercut = 0.5
+
+    # as a property to enforce overriding
+    @property
+    @abc.abstractmethod
+    def cornercut(cls) -> float:
+        pass
 
     def step(self, dt, level_map: List[List[Tile]]):
         self.x += self.direction.value[0] * dt * self.speed
@@ -49,15 +57,17 @@ class Mover:
             and self.y + 0.75 > other.y + 0.25
             and self.y + 0.25 < other.y + 0.75
         )
-    
+
     def reset(self):
         self.x = self.start_x
         self.y = self.start_y
         self.direction = Direction.NONE
 
     # to be implimented by sub classes
+    @abc.abstractmethod
     def check_new_direction(self, _) -> Direction:
         raise NotImplementedError
 
+    @abc.abstractmethod
     def draw(self, screen, offset, grid_size):
         raise NotImplementedError
