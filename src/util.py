@@ -32,6 +32,8 @@ def rate_limit(n, goal, speed):
     error = goal - n
     return n + math.copysign(min(abs(error), speed), error)
 
+def clamp(n, low, high):
+    return min(high, max(low, n))
 
 Grid2d = Tuple[int, int]
 
