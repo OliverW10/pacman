@@ -1,9 +1,9 @@
 import math
-from typing import List, Tuple
 import pygame
 import time
 from copy import deepcopy
-from ai import PredictGhostSystem
+from ai1 import PredictGhostSystem
+from ai2 import CornerGhostSystem
 from level import Tile, TileMap, classic_map, draw_map
 from pacman_ai import RandomPacman
 from util import Direction, Grid2d
@@ -22,6 +22,7 @@ class Game:
         self.start_tilemap = tilemap
         self.pacman = pacman
         self.ghosts_system = ghosts
+        # how long since pacman and a ghost collided
         self.ghost_ate_time = 0
         self.dying = False
         self.ghost_streak = 0
@@ -54,6 +55,7 @@ class Game:
             self.ghosts_system.step(dt, self.tilemap, self.pacman)
 
         # do tilemap collisions
+        # TODO: idk if this should be in game
         current_tile = self.tilemap[math.floor(self.pacman.y)][
             math.floor(self.pacman.x)
         ]
@@ -89,11 +91,10 @@ class Game:
 if __name__ == "__main__":
     # create game instance
     pacman = Pacman(14, 23.5, 6)
-    ghosts = PredictGhostSystem((14, 11.5))
+    ghosts = CornerGhostSystem((14, 11.5))
     game = Game(classic_map, pacman, ghosts)
 
     running = True
-    debug = False
     last_frame_time = time.time()
 
     # setup pygame
@@ -119,13 +120,12 @@ if __name__ == "__main__":
             if event.type == pygame.QUIT:
                 running = False
 
-        if not debug:
-            game.step(dt)
-            screen.fill((0, 0, 0))
-            game.draw(
-                screen,
-                400 - 14 * grid_size,
-                300 - 15 * grid_size,
-                28 * grid_size,
-                31 * grid_size,
-            )
+        game.step(dt)
+        screen.fill((0, 0, 0))
+        game.draw(
+            screen,
+            400 - 14 * grid_size,
+            300 - 15 * grid_size,
+            28 * grid_size,
+            31 * grid_size,
+        )

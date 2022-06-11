@@ -1,3 +1,8 @@
+# functions & classes to help with a 'tree' data structure
+# has multiple levels of TreeNode's starting from a top level containg just the root
+# each node holds a position, direction and the index of the parent in the above level
+# Tree[Level[TreeNode], Level[TreeNode, ], Level[TreeNode, ]]
+
 from typing import Optional, List, Tuple
 from util import Grid2d, Direction, to_screen, center
 from level import TileMap, get_available_directions
@@ -12,6 +17,7 @@ class TreeNode:
     pos: Grid2d
     direction: Direction  # direction came from
     chance: Optional[float]
+    idx: Optional[int]
 
 
 def draw_tree(
@@ -52,12 +58,14 @@ def draw_tree(
             grid_size * 0.3,
         )
 
+
 # explore all possible paths from a position
 def create_tree(
     level_map: TileMap,
     start_pos: Grid2d,
     length: int,
     start_direction=Direction.NONE,
+    gh_idx=None,
 ) -> List[List[TreeNode]]:
     possible_tree = [
         [
@@ -66,6 +74,7 @@ def create_tree(
                 (math.floor(start_pos[0]), math.floor(start_pos[1])),
                 start_direction,
                 1,
+                gh_idx,
             )
         ],
     ]
@@ -89,6 +98,26 @@ def create_tree(
                 )
                 wrapped_pos = (pos[0] % len(level_map[0]), pos[1] % len(level_map))
                 possible_tree[i + 1].append(
-                    TreeNode(idx, wrapped_pos, direction, new_chance)
+                    TreeNode(idx, wrapped_pos, direction, new_chance, gh_idx)
                 )
     return possible_tree
+
+
+def get_path_from_tree(
+    tree: List[List[TreeNode]], end_node: TreeNode
+) -> List[TreeNode]:
+    """
+    Returns a list of Grid2d's of the path from tree[0] to end_node
+    Parameters:
+        tree: tree structure like that returned from create_tree
+        end_node: a node in tree
+    """
+    path = [end_node]
+    # which level of the tree we are on
+    level = len(tree) - 1
+    node = end_node
+    while (not node.parent is None) and level >= 0:
+        level -= 1
+        node = tree[level][node.parent]
+        path.append(node)
+    return path.reverse()

@@ -1,13 +1,15 @@
+from dataclasses import dataclass
 import random
 from typing import List, Tuple, Optional
 from ghosts import ClassicGhost, GhostSystem, BaseGhost
 from level import Tile, TileMap, get_available_directions, is_wall, nearest_free
 from pacman import Pacman
 from pathfinder import pathfind
-from util import Direction, Grid2d, TreeNode, center, clamp, create_tree, to_screen
-from tree import create_tree, TreeNode
+from util import Direction, Grid2d, center, clamp, to_screen
+from tree import create_tree, TreeNode, get_path_from_tree
 import math
 import pygame
+from itertools import product
 
 
 class PathGhost(BaseGhost):
@@ -16,40 +18,16 @@ class PathGhost(BaseGhost):
         self.colour = colour
         self.cur_colour = colour
         self.path: List[Grid2d] = []
-        self.goal: Grid2d = [0, 0]
 
-    def set_goal(self, goal: Grid2d, level: TileMap):
-        self.goal = goal
+    def set_path(self, path: Grid2d):
+        self.path = path
 
     # called whenever there are more than one possible directions to go
     def get_new_direction(
         self, available: List[Direction], level_map: TileMap
     ) -> Direction:
-        x = math.floor(self.x)
-        y = math.floor(self.y)
-        last_x = x - self.last_direction.value[0]
-        last_y = y - self.last_direction.value[1]
-        # remember state of square behind us
-        temp = level_map[last_y][last_x]
-        # fill square behind us to stop turning around
-        level_map[last_y][last_x] = Tile.WALL
-        # move goal out of walls, TODO: can fail
-        goal = nearest_free(level_map, *[math.floor(n) for n in self.goal])
-        # find path to goal
-        self.path = pathfind(level_map, (x, y), goal)
-        # restore square behind us
-        level_map[last_y][last_x] = temp
-        # find direction from path
-        if len(self.path) <= 1:
-            print("no path")
-            return random.choice(available)
-        diff = (self.path[1][0] - x, self.path[1][1] - y)
-        wanted_dir = Direction(diff)
-        if wanted_dir in available:
-            return wanted_dir
-        else:
-            print("couldnt go in wanted direction")
-            return random.choice(available)
+        wanted_dir = self.path[1]
+        return self.path[1]
 
     def draw(self, screen, offset, grid_size):
         super().draw(screen, offset, grid_size)
@@ -62,7 +40,7 @@ class PathGhost(BaseGhost):
 
 # picks best routes for each ghost by looking at all possible ghost paths
 # and taking the one which maximises an eval function (number of squares, pellets and energisers pacman can reach)
-class LookaheadGhostSystem(GhostSystem):
+class CornerGhostSystem(GhostSystem):
     def __init__(self, ghost_start: Grid2d):
         super().__init__(ghost_start)
         colours = [(255, 0, 0), (0, 255, 255), (255, 0, 255), (255, 160, 0)]
@@ -86,10 +64,38 @@ class LookaheadGhostSystem(GhostSystem):
             Direction.NONE,
         )
         ghost_trees = [
-            create_tree(level_map, (ghost.x, ghost.y), closest_dist, ghost.direction)
-            for ghost in self.ghosts
+            create_tree(level_map, (ghost.x, ghost.y), closest_dist, ghost.direction, 1, idx)
+            for idx, ghost in enumerate(self.ghosts)
         ]
+        # generate all possible combinations of paths ghosts could take
+        # https://docs.python.org/3/library/itertools.html#itertools.product
+        all_combs = product(*[x[-1] for x in ghost_trees])
+        # find best
+        # TODO: remove obviously bad ones
+        best_eval = 99999
+        best_idx = -1
+        for comb_idx, comb in enumerate(all_combs):
+            print(comb_idx, comb)
+            # to get better type info
+            # comb has a [ghost_idx, final_node] for each ghost in this combination
+            comb: Tuple[TreeNode] = comb
+            # create 'ghost path', list of positions in path, for each ghost
+            ghost_paths: List[List[Grid2d]] = []
+            for path_end in comb:
+                ghost_paths.append([x.pos for x in get_path_from_tree(ghost_trees[path_end.idx], path_end)])
+
+            fittness = CornerGhostSystem.evaluate(ghost_paths, pacman_tree, level_map)
+            print(fittness)
+            if fittness > best_eval:
+                best_idx = comb_idx
+                best_eval = fittness
         
+        best_paths = all_combs[best_idx]
+        # get path for each ghost
+        for path_end in best_paths:
+            path = get_path_from_tree(ghost_trees[path_end.idx], path_end)
+            # give path to ghost to follow
+            self.ghosts[path_end.idx].set_path(path)
 
         super().step(dt, level_map, pacman)
 
