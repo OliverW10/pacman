@@ -17,7 +17,7 @@ class TreeNode:
     pos: Grid2d
     direction: Direction  # direction came from
     chance: Optional[float]
-    idx: Optional[int]
+    ghost_idx: Optional[int]
 
 
 def draw_tree(
@@ -120,4 +120,5 @@ def get_path_from_tree(
         level -= 1
         node = tree[level][node.parent]
         path.append(node)
-    return path.reverse()
+    path.reverse()
+    return path
