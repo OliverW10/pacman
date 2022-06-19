@@ -1,8 +1,10 @@
-from dataclasses import dataclass
+# create tree of all possible pacman positions in some n moves
+# remove unlikely and bad ones
+# each ghost uses A* to path to the nearest one
+
 import random
-from re import T
 from typing import List, Tuple, Optional
-from ghosts import ClassicGhost, GhostSystem, BaseGhost
+from ghosts import ClassicGhost, BaseGhostSystem, BaseGhost
 from level import Tile, TileMap, get_available_directions, is_wall, nearest_free
 from pacman import Pacman
 from pathfinder import pathfind
@@ -64,7 +66,7 @@ class PathfindGhost(BaseGhost):
 
 
 # tries to predict pacmans moves and ghosts target those positions
-class PredictGhostSystem(GhostSystem):
+class PredictGhostSystem(BaseGhostSystem):
     def __init__(self, ghost_start: Grid2d):
         super().__init__(ghost_start)
         colours = [(255, 0, 0), (0, 255, 255), (255, 0, 255), (255, 160, 0)]

@@ -1,55 +1,29 @@
-from dataclasses import dataclass
-import random
+# test every possible combination of ghost paths for next n moves
+# pick one that maximies an eval function
+# eval function either
+#   countes total squares + pellets + super pellets availible to pacman in n moves
+# or
+#   countes maximum of same thing
+
 import time
 from typing import List, Tuple, Optional
-from ghosts import ClassicGhost, GhostSystem, BaseGhost
+from ghosts import BaseGhostSystem, TurnGhost
 from level import Tile, TileMap, get_available_directions, is_wall, nearest_free
 from pacman import Pacman
-from pathfinder import pathfind
 from util import Direction, Grid2d, center, clamp, to_screen
 from tree import create_tree, TreeNode, get_path_from_tree
 import math
 import pygame
 from itertools import product
 
-
-class PathGhost(BaseGhost):
-    def __init__(self, x, y, colour):
-        super().__init__(x, y)
-        self.colour = colour
-        self.cur_colour = colour
-        self.path: List[TreeNode] = []
-
-    def set_path(self, path: List[TreeNode]):
-        self.path = path
-
-    # called whenever there are more than one possible directions to go
-    def get_new_direction(
-        self, available: List[Direction], level_map: TileMap
-    ) -> Direction:
-        wanted_dir = self.path[1].direction
-        if wanted_dir in available:
-            return self.path[1].direction
-        else:
-            print("cant go in wanted direction")
-            return random.choice(available)
-
-    def draw(self, screen, offset, grid_size):
-        super().draw(screen, offset, grid_size)
-        for g1, g2 in zip(self.path, self.path[1:]):
-            p1 = to_screen(center(g1.pos), offset, grid_size)
-            p2 = to_screen(center(g2.pos), offset, grid_size)
-            pygame.draw.line(screen, self.colour, p1, p2, 3)
-
-
 # picks best routes for each ghost by looking at all possible ghost paths
 # and taking the one which maximises an eval function (number of squares, pellets and energisers pacman can reach)
-class CornerGhostSystem(GhostSystem):
+class CornerGhostSystem(BaseGhostSystem):
     def __init__(self, ghost_start: Grid2d):
         super().__init__(ghost_start)
         colours = [(255, 0, 0), (0, 255, 255), (255, 0, 255), (255, 160, 0)]
-        self.ghosts: List[PathGhost] = [
-            PathGhost(ghost_start[0], ghost_start[1], col) for col in colours
+        self.ghosts: List[TurnGhost] = [
+            TurnGhost(ghost_start[0], ghost_start[1], col) for col in colours
         ]
         self.pacman_trees: List[List[TreeNode]] = []
         self.level_size = (0, 0)
@@ -93,7 +67,8 @@ class CornerGhostSystem(GhostSystem):
         # https://docs.python.org/3/library/itertools.html#itertools.product
         all_combs = list(product(*[x[-1] for x in ghost_trees]))
         len_after = sum(len(x[1]) for x in ghost_trees)
-        print("before:", len_before, "\tafter:", len_after, "\tcombs:", len(all_combs))
+        combs_len = len(all_combs)
+        # print("before:", len_before, "\tafter:", len_after, "\tcombs:", len(all_combs))
         all_combs = all_combs[:500]
         # find best
         # TODO: remove obviously bad ones to speed up
@@ -115,13 +90,15 @@ class CornerGhostSystem(GhostSystem):
             if fittness < best_eval:
                 best_idx = comb_idx
                 best_eval = fittness
-        # print("ai time:", round(time.perf_counter() - start_time, 3))
+        total_time = time.perf_counter()-start_time
+        if total_time > 0.1:
+            print(f"time: {round(total_time, 3)}\tcombs {combs_len}")
         best_paths = all_combs[best_idx]
         # get path for each ghost
         for path_end in best_paths:
             path = get_path_from_tree(ghost_trees[path_end.ghost_idx], path_end)
             # give path to ghost to follow
-            self.ghosts[path_end.ghost_idx].set_path(path)
+            self.ghosts[path_end.ghost_idx].set_path_tree(path)
 
         super().step(dt, level_map, pacman)
 

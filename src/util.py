@@ -46,3 +46,6 @@ def center(pos: Grid2d) -> Grid2d:
     x = math.floor(pos[0]) + 0.5
     y = math.floor(pos[1]) + 0.5
     return (x, y)
+
+def floor_pos(pos: Grid2d) -> Grid2d:
+    return math.floor(pos[0]), math.floor(pos[1])

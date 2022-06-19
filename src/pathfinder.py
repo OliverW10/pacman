@@ -1,6 +1,6 @@
 from astar import AStar
 from level import is_wall, Tile
-from util import Grid2d
+from util import Grid2d, floor_pos
 from typing import List
 import math
 
@@ -34,5 +34,5 @@ class MazeSolver(AStar):
         return [n for n in possible_neighbors if not is_wall(self.maze, n[0], n[1])]
 
 
-def pathfind(maze: List[List[Tile]], start: Grid2d, end: Grid2d):
-    return list(MazeSolver(maze).astar(start, end))
+def pathfind(maze: List[List[Tile]], start: Grid2d, end: Grid2d) -> List[Grid2d]:
+    return list(MazeSolver(maze).astar(floor_pos(start), floor_pos(end)))
