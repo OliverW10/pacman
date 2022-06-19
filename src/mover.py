@@ -57,6 +57,14 @@ class Mover:
             and self.y + 0.75 > other.y + 0.25
             and self.y + 0.25 < other.y + 0.75
         )
+    
+    def euc_dist(self, other: 'Mover'):
+        """Returns the euclidean distance to another Mover"""
+        return math.hypot(self.x-other.x, self.y-other.y)
+    
+    def man_dist(self, other: 'Mover'):
+        """Returns the manhattan distance to another Mover"""
+        return abs(self.x-other.x) + abs(self.y-other.y)
 
     def reset(self):
         self.x = self.start_x

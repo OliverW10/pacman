@@ -270,7 +270,7 @@ class ClassicGhostSystem(BaseGhostSystem):
             self.clyde.set_goal((1, 32))
 
 
-class TurnGhost(BaseGhost):
+class SimpleGhost(BaseGhost):
     def __init__(self, x, y, colour):
         super().__init__(x, y)
         self.colour = colour

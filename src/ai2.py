@@ -7,7 +7,7 @@
 
 import time
 from typing import List, Tuple, Optional
-from ghosts import BaseGhostSystem, TurnGhost
+from ghosts import BaseGhostSystem, SimpleGhost
 from level import Tile, TileMap, get_available_directions, is_wall, nearest_free
 from pacman import Pacman
 from util import Direction, Grid2d, center, clamp, to_screen
@@ -22,8 +22,8 @@ class CornerGhostSystem(BaseGhostSystem):
     def __init__(self, ghost_start: Grid2d):
         super().__init__(ghost_start)
         colours = [(255, 0, 0), (0, 255, 255), (255, 0, 255), (255, 160, 0)]
-        self.ghosts: List[TurnGhost] = [
-            TurnGhost(ghost_start[0], ghost_start[1], col) for col in colours
+        self.ghosts: List[SimpleGhost] = [
+            SimpleGhost(ghost_start[0], ghost_start[1], col) for col in colours
         ]
         self.pacman_trees: List[List[TreeNode]] = []
         self.level_size = (0, 0)

@@ -4,11 +4,12 @@ import time
 from copy import deepcopy
 from ai1 import PredictGhostSystem
 from ai2 import CornerGhostSystem
+from ai3 import AStarGhostSystem
 from level import Tile, TileMap, classic_map, draw_map
 from pacman_ai import RandomPacman
 from util import Direction, Grid2d
 from pacman import Pacman
-from ghosts import ClassicGhostSystem, BaseGhost, GhostMode, GhostSystem
+from ghosts import ClassicGhostSystem, BaseGhost, GhostMode, BaseGhostSystem
 
 
 class Game:
@@ -16,7 +17,7 @@ class Game:
         self,
         tilemap: TileMap,
         pacman: Pacman,
-        ghosts: GhostSystem,
+        ghosts: BaseGhostSystem,
     ):
         self.tilemap = deepcopy(tilemap)
         self.start_tilemap = tilemap
@@ -90,8 +91,11 @@ class Game:
 
 if __name__ == "__main__":
     # create game instance
-    pacman = Pacman(14, 23.5, 6)
-    ghosts = CornerGhostSystem((14, 11.5))
+    # 60fps, 1 pixel/frame, 8 pixels per tile
+    # TODO: pacman slows down when eating pellets
+    pacman_speed = 1/(8/60)
+    pacman = Pacman(14, 23.5, 7.5)
+    ghosts = AStarGhostSystem((14, 11.5))
     game = Game(classic_map, pacman, ghosts)
 
     running = True
