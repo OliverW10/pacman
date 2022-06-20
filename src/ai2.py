@@ -7,7 +7,8 @@
 
 import time
 from typing import List, Tuple, Optional
-from ghosts import BaseGhostSystem, SimpleGhost
+from ghosts import BaseGhostSystem
+from simple_ghost import SimpleGhost
 from level import Tile, TileMap, get_available_directions, is_wall, nearest_free
 from pacman import Pacman
 from util import Direction, Grid2d, center, clamp, to_screen

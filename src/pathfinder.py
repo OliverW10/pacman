@@ -27,6 +27,7 @@ class MazeSolver(AStar):
         for pos, multiplier in self.tile_modifiers:
             if n1 == pos or n2 == pos:
                 overall_value *= multiplier
+                break
         return overall_value
 
     def neighbors(self, node):

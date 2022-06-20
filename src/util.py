@@ -35,6 +35,23 @@ def rate_limit(n, goal, speed):
 def clamp(n, low, high):
     return min(high, max(low, n))
 
+def map_range(n: float, a_low: float, a_high: float, b_low: float, b_high: float, clamp_res=True):
+    """Maps a value `n` from a range a to another b
+    Parameters:
+        n: value to scale
+        a_low, a_high: min and max of input range
+        b_low, b_high: min and max of output range
+        clamp: wether to limit output to b
+    """
+    a_dist = a_high-a_low
+    b_dist = b_high-b_low
+    percent = (n-a_low)/a_dist
+    result = b_low + percent*b_dist
+    if clamp_res:
+        return clamp(result, b_low, b_high)
+    else:
+        return result
+
 Grid2d = Tuple[int, int]
 
 # converts grid to screen coordinates
