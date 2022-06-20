@@ -4,7 +4,7 @@ import pygame
 from ghosts import BaseGhost
 from util import Direction, Grid2d, to_screen, center
 from level import TileMap
-from typing import List, Tuple
+from typing import List
 from tree import TreeNode
 
 class SimpleGhost(BaseGhost):

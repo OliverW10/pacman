@@ -3,9 +3,9 @@
 # each ghost uses A* to path to the nearest one
 
 import random
-from typing import List, Tuple, Optional
-from ghosts import ClassicGhost, BaseGhostSystem, BaseGhost
-from level import Tile, TileMap, get_available_directions, is_wall, nearest_free
+from typing import List
+from ghosts import BaseGhostSystem, BaseGhost
+from level import Tile, TileMap, nearest_free
 from pacman import Pacman
 from pathfinder import pathfind
 from tree import create_tree, TreeNode, draw_tree

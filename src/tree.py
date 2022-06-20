@@ -26,11 +26,11 @@ def draw_tree(
     grid_size: int,
     tree: List[List[TreeNode]],
     colour: Tuple[int, int, int],
+    ends=False
 ):
     def draw_grid_line(g1: Grid2d, g2: Grid2d, chance: float):
         p1 = to_screen(center(g1), offset, grid_size)
         p2 = to_screen(center(g2), offset, grid_size)
-        print(chance)
         pygame.draw.line(
             screen, tuple(round(x * chance**0.5) for x in colour), p1, p2, 3
         )
@@ -50,13 +50,14 @@ def draw_tree(
             else:
                 draw_grid_line(g1, g2, node.chance)
 
-    for node in tree[-1]:
-        pygame.draw.circle(
-            screen,
-            (0, 255, 0),
-            to_screen(center(node.pos), offset, grid_size),
-            grid_size * 0.3,
-        )
+    if ends:
+        for node in tree[-1]:
+            pygame.draw.circle(
+                screen,
+                (0, 255, 0),
+                to_screen(center(node.pos), offset, grid_size),
+                grid_size * 0.3,
+            )
 
 
 # explore all possible paths from a position

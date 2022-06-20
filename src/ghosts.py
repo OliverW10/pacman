@@ -1,12 +1,10 @@
-from os import kill
 import random
 from mover import Mover
-from tree import TreeNode
 from util import Direction, Grid2d, center, to_screen
 from pacman import Pacman
 from level import Tile, TileMap, get_available_directions
-from typing import Tuple, List, Callable
-from enum import Enum, auto
+from typing import Tuple, List
+from enum import Enum
 import pygame
 import math
 import time
@@ -17,7 +15,7 @@ class GhostMode(Enum):
     SCATTER = 10
     RUN = 7
 
-
+# base ghost for others to inherit from, randomly turns at all intersections
 class BaseGhost(Mover):
     def __init__(self, x, y):
         super().__init__(x, y, 0.95*7.5)
@@ -218,7 +216,12 @@ class BaseGhostSystem:
             ghost.step(dt * self.speed_mult, level_map)
 
     def reset(self):
-        self.__init__(self.ghost_start)
+        self = self.__init__(self.ghost_start)
+
+class RandomGhostSystem(BaseGhostSystem):
+    def __init__(self, ghost_start: Grid2d):
+        super().__init__(ghost_start)
+        self.ghosts = [BaseGhost(ghost_start[0], ghost_start[1]) for _ in range(4)]
 
 
 class ClassicGhostSystem(BaseGhostSystem):
