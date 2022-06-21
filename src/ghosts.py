@@ -30,7 +30,7 @@ class BaseGhost(Mover):
 
     @property
     def cornercut(self) -> float:
-        return 0.05
+        return 1/30
 
     def step(self, dt: float, level_map: List[List[Tile]]):
         if not self.dead:
@@ -52,8 +52,15 @@ class BaseGhost(Mover):
                 pass
         if self.direction != Direction.NONE:
             self.last_direction = self.direction
-        return self.get_new_direction(available, tile_map)
 
+        if len(available) == 0:
+            return self.direction
+        elif len(available) == 1:
+            return available[0]
+        else:
+            return self.get_new_direction(available, tile_map)
+
+    # is overwritten by child
     def get_new_direction(self, available: List[Direction], *args) -> Direction:
         return random.choice(available)
 

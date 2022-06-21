@@ -1,8 +1,9 @@
 from astar import AStar
 from level import is_wall, Tile
-from util import Grid2d, floor_pos
+from util import Direction, Grid2d, floor_pos
 from typing import List, Tuple
 import math
+import numpy as np
 
 # https://github.com/jrialland/python-astar/blob/master/tests/maze/test_maze.py
 class MazeSolver(AStar):
@@ -10,7 +11,7 @@ class MazeSolver(AStar):
     """sample use of the astar algorithm. In this exemple we work on a maze made of ascii characters,
     and a 'node' is just a (x,y) tuple that represents a reachable position"""
 
-    def __init__(self, maze: List[List[Tile]], tile_modifiers: List[Grid2d]):
+    def __init__(self, maze: List[List[Tile]], tile_modifiers: np.ndarray):
         self.maze = maze
         self.width = len(self.maze[0])
         self.height = len(self.maze)
@@ -23,12 +24,7 @@ class MazeSolver(AStar):
         return math.hypot(x2 - x1, y2 - y1)
 
     def distance_between(self, n1, n2):
-        overall_value = 1
-        for pos, multiplier in self.tile_modifiers:
-            if n1 == pos or n2 == pos:
-                overall_value *= multiplier
-                break
-        return overall_value
+        return self.tile_modifiers[n1[1]][n1[0]] * self.tile_modifiers[n2[1]][n2[0]]
 
     def neighbors(self, node):
         """for a given coordinate in the maze, returns up to 4 adjacent(north,east,south,west)
@@ -36,10 +32,31 @@ class MazeSolver(AStar):
         """
         x, y = node
         possible_neighbors = [(x, y - 1), (x, y + 1), (x - 1, y), (x + 1, y)]
-        return [n for n in possible_neighbors if not is_wall(self.maze, n[0], n[1])]
+        return [
+            n for n in possible_neighbors if not is_wall(self.maze, n[0], n[1], True)
+        ]
 
 
 def pathfind(
-    maze: List[List[Tile]], start: Grid2d, end: Grid2d, used_tiles: List[Tuple[Grid2d, float]] = []
+    maze: List[List[Tile]],
+    start: Grid2d,
+    end: Grid2d,
+    start_dir=Direction.NONE,
+    tile_weights: List[Tuple[Grid2d, float]] = [],
 ) -> List[Grid2d]:
-    return list(MazeSolver(maze, used_tiles).astar(floor_pos(start), floor_pos(end)))
+    """Uses A* to pathfind from `start` to `end` through `maze`, uses `tile_weights` as distance between tiles
+    if start_dir is set it wont go in start_dir.inverse() as the first move"""
+    # TODO: can still turn around on second move
+    if not start_dir is Direction.NONE:
+        last_x = math.floor(start[0]-start_dir.x)
+        last_y = math.floor(start[1]-start_dir.y)
+        # remember state of square behind us
+        temp = maze[last_y][last_x]
+        # fill square behind us to stop turning around
+        maze[last_y][last_x] = Tile.WALL
+        ret = list(MazeSolver(maze, tile_weights).astar(floor_pos(start), floor_pos(end)))
+        # restore square behind us
+        maze[last_y][last_x] = temp
+        return ret
+    else:
+        return list(MazeSolver(maze, tile_weights).astar(floor_pos(start), floor_pos(end)))

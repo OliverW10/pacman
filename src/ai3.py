@@ -11,22 +11,8 @@ from pathfinder import pathfind
 from tree import TreeNode, create_tree, draw_tree
 from util import Grid2d
 import pygame
+import numpy as np
 
-def combine_modifiers(tile_modifiers: List[Tuple[Grid2d, float]]) -> List[Tuple[Grid2d, float]]:
-    """Takes a list of tuples of (position, multiplier) and combines any that have the same position"""
-    # creates set of positions to remove duplicates
-    positions = set([])
-    for modifier in tile_modifiers:
-        positions.add(modifier[0])
-    
-    result = []
-    for position in positions:
-        overall_mult = 1
-        for pos, multiplier in tile_modifiers:
-            if pos == position:
-                overall_mult *= multiplier
-        result.append((position, overall_mult))
-    return result
 
 class AStarGhostSystem(BaseGhostSystem):
     USED_TILE_WEIGHT = 3
@@ -50,7 +36,7 @@ class AStarGhostSystem(BaseGhostSystem):
         target_pos = (pacman.x+pacman.direction.x*target_ahead, pacman.y+pacman.direction.y*target_ahead)
         # a list of tile weight modifications
         # higher values makes the ghost want to avoid that tile
-        tile_modifiers: List[Tuple[Grid2d, float]] = []
+        tile_modifiers = np.ones((32, 32), dtype=np.single)
 
         # make tiles ahead of pacman favorable
         self.pacman_tree = create_tree(
@@ -61,23 +47,14 @@ class AStarGhostSystem(BaseGhostSystem):
         )
         for layer in self.pacman_tree:
             for node in layer:
-                tile_modifiers.append((node.pos, self.AHEAD_TILE_WEIGHT))
+                tile_modifiers[node.pos[1]][node.pos[0]] *= self.AHEAD_TILE_WEIGHT
         
         # ghost who is closest to pacman gets preference for pathing
         for ghost in sorted(self.ghosts, key=lambda x: x.euc_dist(x)):
-            path = pathfind(
-                level_map, (ghost.x, ghost.y), target_pos, tile_modifiers
-            )
-            for path_node in path:
-                dist = math.dist(node.pos, target_pos)
-                # dont add tile modifiers that are far away from pacman
-                if dist < 10:
-                    tile_modifiers.append((path_node, self.USED_TILE_WEIGHT))
+            path = pathfind(level_map, (ghost.x, ghost.y), target_pos, ghost.direction, tile_modifiers)
+            for node in path:
+                tile_modifiers[node[1]][node[0]] *= self.USED_TILE_WEIGHT
             
-            # combine duplicates
-            tile_modifiers = combine_modifiers(tile_modifiers)
-            # limit number of items in tile modifiers
-            tile_modifiers = tile_modifiers[:75]
             if len(path) > 1:
                 ghost.set_path_plain(path)
         super().step(dt, level_map, pacman)
