@@ -8,17 +8,13 @@ from util import ALL_DIRECTIONS, Direction, Grid2d
 
 class Tile(Enum):
     EMPTY = 0
-    PELLET = 2
     WALL = 1
+    PELLET = 2
     SUPER_PELLET = 3
 
 
 TileMap = List[List[Tile]]
-# 0: empty
-# 1: wall
-# 2: pellet
-# 3: energiser
-# use this beacuse it is more concise then doing Tile.Whatever for each tile
+
 # fmt: off
 classic_map = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],

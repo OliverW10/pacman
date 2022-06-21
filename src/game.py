@@ -139,7 +139,7 @@ if __name__ == "__main__":
     # create game instance
     pacman = Pacman(14, 23.5)
     # pacman = Pacman(35, 16.5, pacman_speed)
-    ghosts = RandomGhostSystem((14, 11.5))
+    ghosts = AStarGhostSystem((14, 11.5))
     game = Game(classic_map, pacman, ghosts)
 
     running = True
@@ -169,6 +169,7 @@ if __name__ == "__main__":
     while running:
         # get delta time
         dt = time.time() - last_frame_time
+        dt = min(dt, 1/30)
         last_frame_time = time.time()
         # print out fps every hundred frames
         fps_ticker += 1
