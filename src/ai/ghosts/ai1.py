@@ -4,12 +4,12 @@
 
 import random
 from typing import List
-from ghosts import BaseGhostSystem, BaseGhost
-from level import Tile, TileMap, nearest_free
-from pacman import Pacman
-from pathfinder import pathfind
-from tree import create_tree, TreeNode, draw_tree
-from util import Direction, Grid2d, center, to_screen
+from game.ghosts import BaseGhostSystem, BaseGhost
+from game.level import Tile, TileMap, nearest_free
+from game.util import Direction, Grid2d, center, to_screen
+from game.pacman import BasePacman
+from ai.pathfinder import pathfind
+from ai.tree import create_tree, TreeNode, draw_tree
 import math
 import pygame
 
@@ -80,7 +80,7 @@ class PredictGhostSystem(BaseGhostSystem):
         self.wipeout_dist = 4
         self.level_size = (0, 0)
 
-    def step(self, dt: float, level_map: List[List[Tile]], pacman: Pacman):
+    def step(self, dt: float, level_map: List[List[Tile]], pacman: BasePacman):
         self.level_size = (len(level_map[0]), len(level_map))
         # create pacman possible path tree
         closest_dist = min(

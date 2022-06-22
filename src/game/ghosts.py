@@ -1,8 +1,8 @@
 import random
-from mover import Mover
-from util import Direction, Grid2d, center, to_screen
-from pacman import Pacman
-from level import Tile, TileMap, get_available_directions
+from game.mover import Mover
+from game.util import Direction, Grid2d, center, to_screen
+from game.pacman import BasePacman
+from game.level import Tile, TileMap, get_available_directions
 from typing import Tuple, List
 from enum import Enum
 import pygame
@@ -201,7 +201,7 @@ class BaseGhostSystem:
         for ghost in self.ghosts:
             ghost.draw(screen, offset, grid_size)
 
-    def step(self, dt: float, level_map: List[List[Tile]], pacman: Pacman):
+    def step(self, dt: float, level_map: List[List[Tile]], pacman: BasePacman):
         if time.time() - self.mode_timer > self.ghost_mode.value:
             if self.ghost_mode is GhostMode.RUN:
                 self.set_mode(GhostMode.CHASE)
@@ -245,7 +245,7 @@ class ClassicGhostSystem(BaseGhostSystem):
         self.pinky = self.ghosts[2]
         self.clyde = self.ghosts[3]
 
-    def step(self, dt: float, level_map: List[List[Tile]], pacman: Pacman):
+    def step(self, dt: float, level_map: List[List[Tile]], pacman: BasePacman):
         super().step(dt, level_map, pacman)
         if self.ghost_mode is GhostMode.CHASE:
             self.blinky.set_goal((pacman.x, pacman.y))

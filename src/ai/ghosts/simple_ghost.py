@@ -1,11 +1,11 @@
 import random
 import math
 import pygame
-from ghosts import BaseGhost
-from util import Direction, Grid2d, to_screen, center
-from level import TileMap
+from game.ghosts import BaseGhost
+from game.util import Direction, Grid2d, to_screen, center
+from game.level import TileMap
 from typing import List
-from tree import TreeNode
+from ai.tree import TreeNode
 
 
 class SimpleGhost(BaseGhost):
@@ -49,7 +49,7 @@ class SimpleGhost(BaseGhost):
         for dirc in self.wanted_dirs:
             if dirc in available:
                 return dirc
-        print("went in random direction")
+        # print("went in random direction")
         return random.choice(available)
 
     def draw(self, screen, offset, grid_size):

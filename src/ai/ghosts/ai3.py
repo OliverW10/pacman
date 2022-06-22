@@ -3,19 +3,19 @@
 
 import math
 from typing import List, Tuple
-from ghosts import BaseGhostSystem
-from simple_ghost import SimpleGhost
-from level import Tile
-from pacman import Pacman
-from pathfinder import pathfind
-from tree import TreeNode, create_tree, draw_tree
-from util import Grid2d
+from game.ghosts import BaseGhostSystem
+from ai.ghosts.simple_ghost import SimpleGhost
+from game.level import Tile
+from game.pacman import BasePacman
+from ai.pathfinder import pathfind
+from ai.tree import TreeNode, create_tree, draw_tree
+from game.util import Grid2d
 import pygame
 import numpy as np
 
 
 class AStarGhostSystem(BaseGhostSystem):
-    USED_TILE_WEIGHT = 3
+    USED_TILE_WEIGHT = 2
     AHEAD_TILE_WEIGHT = 0.33
     PELLET_WEIGHT = 0.95
 
@@ -30,7 +30,7 @@ class AStarGhostSystem(BaseGhostSystem):
         self.level_size = (0, 0)
         self.pacman_tree: List[List[TreeNode]] = []
 
-    def step(self, dt: float, level_map: List[List[Tile]], pacman: Pacman):
+    def step(self, dt: float, level_map: List[List[Tile]], pacman: BasePacman):
         self.level_size = (len(level_map[0]), len(level_map))
         target_ahead = 1
         target_pos = (pacman.x+pacman.direction.x*target_ahead, pacman.y+pacman.direction.y*target_ahead)

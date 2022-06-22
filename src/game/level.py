@@ -3,8 +3,8 @@ from itertools import permutations
 import math
 import pygame
 from typing import Tuple, List
-from util import ALL_DIRECTIONS, Direction, Grid2d
-
+from game.util import ALL_DIRECTIONS, Direction, Grid2d
+from ctypes import c_int
 
 class Tile(Enum):
     EMPTY = 0
@@ -77,6 +77,16 @@ print("classic: w", len(classic_map[0]), ", h", len(classic_map))
 classic_map = [list(map(Tile, row)) for row in classic_map]
 print("google: w", len(google_map[0]), ", h", len(google_map))
 google_map = [list(map(Tile, row)) for row in google_map]
+
+# create single array for maps
+classic_map_single = []
+for x in classic_map:
+    classic_map_single.extend(x)
+classic_map_c = (c_int * len(classic_map_single))(*[x.value for x in classic_map_single])
+google_map_single = []
+for x in google_map:
+    google_map_single.extend(x)
+google_map_c = (c_int * len(google_map_single))(*[x.value for x in google_map_single])
 
 # edge safe
 def is_wall(tilemap, x, y, outside_val=False):

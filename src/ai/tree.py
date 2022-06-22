@@ -4,8 +4,8 @@
 # Tree[Level[TreeNode], Level[TreeNode, ], Level[TreeNode, ]]
 
 from typing import Optional, List, Tuple
-from util import Grid2d, Direction, to_screen, center
-from level import TileMap, get_available_directions
+from game.util import Grid2d, Direction, to_screen, center
+from game.level import TileMap, get_available_directions
 from dataclasses import dataclass
 import pygame
 import math

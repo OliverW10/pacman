@@ -27,6 +27,18 @@ class Direction(Enum):
 
 ALL_DIRECTIONS = [x for x in Direction]
 
+# used by ai2 c code
+def dir_to_int(d: Direction) -> int:
+    """Convert a python Direction num to the int used by the evluate.c direction enum"""
+    if d is Direction.RIGHT:
+        return 0
+    elif d is Direction.UP:
+        return 1
+    elif d is Direction.LEFT:
+        return 2
+    elif d is Direction.DOWN:
+        return 3
+
 
 def rate_limit(n, goal, speed):
     error = goal - n

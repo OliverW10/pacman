@@ -1,5 +1,5 @@
-from level import Tile, get_available_directions, is_wall
-from util import rate_limit, ALL_DIRECTIONS, Direction
+from game.level import Tile, get_available_directions, is_wall
+from game.util import rate_limit, ALL_DIRECTIONS, Direction
 from typing import List
 import math
 import abc

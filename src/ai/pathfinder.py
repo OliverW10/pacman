@@ -1,6 +1,6 @@
 from astar import AStar
-from level import is_wall, Tile
-from util import Direction, Grid2d, floor_pos
+from game.level import is_wall, Tile
+from game.util import Direction, Grid2d, floor_pos
 from typing import List, Tuple
 import math
 import numpy as np

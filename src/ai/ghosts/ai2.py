@@ -5,14 +5,20 @@
 # or
 #   countes maximum of same thing
 
+# TODO:
+# maybe rather than trying combinations of end positions, do something more like
+# minimax stepping the ghosts and pacman forwards
+# you already have to step forwards through the path for the evaluate function
+# and this way you can elimate bad paths earlier
+
 import time
 from typing import List, Tuple, Optional
-from ghosts import BaseGhostSystem
-from simple_ghost import SimpleGhost
-from level import Tile, TileMap, get_available_directions, is_wall, nearest_free
-from pacman import Pacman
-from util import Direction, Grid2d, center, clamp, to_screen
-from tree import create_tree, TreeNode, get_path_from_tree
+from game.ghosts import BaseGhostSystem
+from ai.ghosts.simple_ghost import SimpleGhost
+from game.level import Tile, TileMap, get_available_directions, is_wall, nearest_free
+from game.pacman import BasePacman
+from game.util import Direction, Grid2d, center, clamp, to_screen
+from ai.tree import create_tree, TreeNode, get_path_from_tree
 import math
 import pygame
 from itertools import product
@@ -29,7 +35,7 @@ class CornerGhostSystem(BaseGhostSystem):
         self.pacman_trees: List[List[TreeNode]] = []
         self.level_size = (0, 0)
 
-    def step(self, dt: float, level_map: List[List[Tile]], pacman: Pacman):
+    def step(self, dt: float, level_map: List[List[Tile]], pacman: BasePacman):
         self.level_size = (len(level_map[0]), len(level_map))
         # use just over half the distance between pacman and nearest ghost as length to search
         closest_dist = 0.7 * min(
