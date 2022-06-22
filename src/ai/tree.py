@@ -115,7 +115,7 @@ def create_tree(
                     new_score += 10
                 elif tile is Tile.SUPER_PELLET:
                     # TODO: calculate actualy ghosts eaten
-                    new_score += 150
+                    new_score += 50
                 possible_tree[i + 1].append(
                     TreeNode(idx, wrapped_pos, direction, new_score, gh_idx)
                 )
