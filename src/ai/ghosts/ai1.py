@@ -46,14 +46,14 @@ class PathfindGhost(BaseGhost):
         level_map[last_y][last_x] = temp
         # find direction from path
         if len(self.path) <= 1:
-            print("no path")
+            # print("no path")
             return random.choice(available)
         diff = (self.path[1][0] - x, self.path[1][1] - y)
         wanted_dir = Direction(diff)
         if wanted_dir in available:
             return wanted_dir
         else:
-            print("couldnt go in wanted direction")
+            # print("couldnt go in wanted direction")
             return random.choice(available)
 
     def draw(self, screen, offset, grid_size):
@@ -114,7 +114,6 @@ class PredictGhostSystem(BaseGhostSystem):
             ]
             # more ghosts than pacman paths
             if len(avalible_ends) == 0:
-                print("more ghosts than goals")
                 for ghost in avalible_ghosts:
                     ghost.set_goal((pacman.x, pacman.y), level_map)
                 break
@@ -145,7 +144,7 @@ class PredictGhostSystem(BaseGhostSystem):
 
     def draw(self, screen: pygame.Surface, offset: Grid2d, grid_size: int):
         super().draw(screen, offset, grid_size)
-        for tree in self.pacman_trees:
-            draw_tree(screen, offset, grid_size, tree, (255, 200, 100))
+        # for tree in self.pacman_trees:
+        #     draw_tree(screen, offset, grid_size, self.level_size, tree, (255, 200, 100))
         # if random.random() > 0.9:
         #     print(len(self.pacman_tree[-1]))

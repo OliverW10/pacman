@@ -7,7 +7,6 @@ from typing import Tuple, List
 from enum import Enum
 import pygame
 import math
-import time
 
 
 class GhostMode(Enum):
@@ -191,18 +190,19 @@ class BaseGhostSystem:
         self.ghost_mode = GhostMode.CHASE
         self.speed_mult = 1
         self.ghost_start = ghost_start
-        self.mode_timer = time.time()
+        self.mode_timer = 0
 
     def set_mode(self, mode: GhostMode):
         self.ghost_mode = mode
-        self.mode_timer = time.time()
+        self.mode_timer = 0
 
     def draw(self, screen, offset, grid_size):
         for ghost in self.ghosts:
             ghost.draw(screen, offset, grid_size)
 
     def step(self, dt: float, level_map: List[List[Tile]], pacman: BasePacman):
-        if time.time() - self.mode_timer > self.ghost_mode.value:
+        self.mode_timer += dt
+        if self.mode_timer > self.ghost_mode.value:
             if self.ghost_mode is GhostMode.RUN:
                 self.set_mode(GhostMode.CHASE)
             if self.ghost_mode is GhostMode.CHASE:

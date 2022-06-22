@@ -8,7 +8,7 @@ from ai.ghosts.simple_ghost import SimpleGhost
 from game.level import Tile
 from game.pacman import BasePacman
 from ai.pathfinder import pathfind
-from ai.tree import TreeNode, create_tree, draw_tree
+from ai.tree import TreeNode, create_tree
 from game.util import Grid2d
 import pygame
 import numpy as np
@@ -33,10 +33,13 @@ class AStarGhostSystem(BaseGhostSystem):
     def step(self, dt: float, level_map: List[List[Tile]], pacman: BasePacman):
         self.level_size = (len(level_map[0]), len(level_map))
         target_ahead = 1
-        target_pos = (pacman.x+pacman.direction.x*target_ahead, pacman.y+pacman.direction.y*target_ahead)
+        target_pos = (
+            pacman.x + pacman.direction.x * target_ahead,
+            pacman.y + pacman.direction.y * target_ahead,
+        )
         # a list of tile weight modifications
         # higher values makes the ghost want to avoid that tile
-        tile_modifiers = np.ones((32, 32), dtype=np.single)
+        tile_modifiers = np.ones((50, 50), dtype=np.single)
 
         # make tiles ahead of pacman favorable
         self.pacman_tree = create_tree(
@@ -48,13 +51,19 @@ class AStarGhostSystem(BaseGhostSystem):
         for layer in self.pacman_tree:
             for node in layer:
                 tile_modifiers[node.pos[1]][node.pos[0]] *= self.AHEAD_TILE_WEIGHT
-        
+
         # ghost who is closest to pacman gets preference for pathing
         for ghost in sorted(self.ghosts, key=lambda x: x.euc_dist(x)):
-            path = pathfind(level_map, (ghost.x, ghost.y), target_pos, ghost.direction, tile_modifiers)
+            path = pathfind(
+                level_map,
+                (ghost.x, ghost.y),
+                target_pos,
+                ghost.direction,
+                tile_modifiers,
+            )
             for node in path:
                 tile_modifiers[node[1]][node[0]] *= self.USED_TILE_WEIGHT
-            
+
             if len(path) > 1:
                 ghost.set_path_plain(path)
         super().step(dt, level_map, pacman)

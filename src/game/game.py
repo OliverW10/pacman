@@ -1,4 +1,5 @@
 import math
+from typing import Tuple
 import pygame
 import time
 from copy import deepcopy
@@ -28,22 +29,21 @@ class Game:
         self.start_tilemap = tilemap
         self.pacman = pacman
         self.ghosts_system = ghosts
-        # how long since pacman and a ghost collided
-        self.ghost_ate_time = 0
+        # timer used to create pauses
+        self.freeze_time = 0
         self.dying = False
         self.ghost_streak = 0
 
         self.score = 0
 
-    def ate_ghost(self):
+    def ate_ghost(self, pause_time: float):
         self.ghost_streak += 1
-        self.ghost_ate_time = 0.4
-        self.score += 2**self.ghost_streak * 400
+        self.freeze_time = pause_time
+        self.score += 2**self.ghost_streak * 200
 
-    def ate_pacman(self):
+    def ate_pacman(self, pause_time: float):
         self.dying = True
-        self.ghost_ate_time = 1
-        print(self.score)
+        self.freeze_time = pause_time
 
     def reset(self):
         self.ghosts_system.reset()
@@ -51,16 +51,23 @@ class Game:
         self.tilemap = deepcopy(self.start_tilemap)
         self.dying = False
         self.score = 0
-        self.ghost_ate_time = 0
-        self.ghost_ate_streak = 0
+        self.freeze_time = 0
+        self.ghost_streak = 0
 
-    def step(self, dt):
-        self.ghost_ate_time -= dt
-        if self.dying and self.ghost_ate_time < 0:
+    def step(self, dt, realtime=True) -> Tuple[bool, int]:
+        """Paramters:
+            dt: delta time in seconds
+            realtime: weather to do pauses after pacman die or eats a ghost
+        Returns: weather pacman has just died
+        """
+        self.freeze_time -= dt
+        if self.dying and self.freeze_time < 0:
+            final_score = self.score
             self.reset()
-        moving = self.ghost_ate_time < 0
+            return (True, final_score)
+        moving = self.freeze_time < 0
         if moving:
-            self.pacman.step(dt, self.tilemap)
+            self.pacman.step(dt, self.tilemap, self.ghosts_system)
             self.ghosts_system.step(dt, self.tilemap, self.pacman)
 
         # do tilemap collisions
@@ -77,15 +84,17 @@ class Game:
                 math.floor(self.pacman.x)
             ] = Tile.EMPTY
             self.score += 50
+            self.ghost_streak = 0
             self.ghosts_system.set_mode(GhostMode.RUN)
 
         # do pacman - ghost collisions
         for ghost in self.ghosts_system.ghosts:
             if ghost.check_collisions(self.pacman):
                 if self.ghosts_system.ghost_mode is GhostMode.RUN:
-                    self.ate_ghost()
+                    self.ate_ghost(0.4 if realtime else 0)
                 else:
-                    self.ate_pacman()
+                    self.ate_pacman(1 if realtime else 0)
+        return (False, self.score)
 
     def draw(self, screen, x, y, w, h):
         grid_size = max(h / len(self.tilemap), w / len(self.tilemap[0]))
@@ -112,8 +121,8 @@ class Game:
             self.step(delta_t)
             # incriment timers
             step_counter += 1
-            if step_counter % 100 == 0:
-                print(step_counter)
+            # if step_counter % 100 == 0:
+            #     print(step_counter)
             score_counter += delta_t
             still_counter += delta_t
             # check if position and score have changed
@@ -124,11 +133,15 @@ class Game:
                 last_pos = (self.pacman.x, self.pacman.y)
                 still_counter = 0
 
-            if (
-                self.dying
-                or still_counter > still_cutoff
-                or score_counter > score_cutoff
-                or step_counter > game_cutoff
-            ):
+            if self.dying:
+                break
+            if still_counter > still_cutoff:
+                # print("didnt move")
+                break
+            if score_counter > score_cutoff:
+                # print("didnt get score")
+                break
+            if step_counter > game_cutoff:
+                # print("game overrun")
                 break
         return self.score

@@ -1,12 +1,16 @@
 import time
 import pygame
 import math
+from ai.ghosts.ai1 import PredictGhostSystem
 from ai.ghosts.ai3 import AStarGhostSystem
+from ai.pacman.pacman_ai2 import ScaredPacman
+from ai.pacman.pacman_random import RandomPacman
+from ai.pacman.pacman_ai1 import GreedyPacman
 from game.game import Game
 from game.pacman import UserPacman, UserPacman
 from game.level import classic_map
 
-pacman = UserPacman(14, 23.5)
+pacman = ScaredPacman(14, 23.5)
 # pacman = UserPacman(35, 16.5, pacman_speed)
 ghosts = AStarGhostSystem((14, 11.5))
 game = Game(classic_map, pacman, ghosts)
@@ -33,7 +37,6 @@ game_rect = (
     map_w * grid_size,
     map_h * grid_size,
 )
-print("score:", game.run_full(1 / 30))
 while running:
     # get delta time
     dt = time.time() - last_frame_time
@@ -50,7 +53,9 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    game.step(dt)
+    died, score = game.step(dt, True)
+    if died:
+        print(score)
     screen.fill((0, 0, 0))
     game.draw(
         screen,

@@ -3,6 +3,7 @@ from typing import List
 from game.level import Tile
 from game.pacman import BasePacman
 from game.util import ALL_DIRECTIONS, Direction
+from game.ghosts import BaseGhostSystem
 
 # pacman that moves randomly
 class RandomPacman(BasePacman):
@@ -15,8 +16,8 @@ class RandomPacman(BasePacman):
         # wont work below 15 fps
         return 1/15
 
-    def step(self, dt: float, level_map: List[List[Tile]]):
-        super().step(dt, level_map)
+    def step(self, dt: float, level_map: List[List[Tile]], ghost_system: BaseGhostSystem):
+        super().step(dt, level_map, ghost_system)
         if not self.direction is Direction.NONE:
             self.last_move = self.direction
 

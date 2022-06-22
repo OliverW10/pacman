@@ -1,14 +1,15 @@
+import math
+import random
 import pygame
 from typing import List, Tuple
 from ai.tree import create_tree, draw_tree, get_path_from_tree
+from game.ghosts import BaseGhostSystem
 from game.level import Tile
 from game.pacman import BasePacman
 from game.util import ALL_DIRECTIONS, Direction, center, to_screen
-from game.ghosts import BaseGhostSystem
 
-# pacman that picks the path that has the highest score
-# has no concept of ghosts and if there are no pellets near it it has a panic attack
-class GreedyPacman(BasePacman):
+# avoid ghosts
+class ScaredPacman(BasePacman):
     def __init__(self, x, y):
         super().__init__(x, y)
         self.last_move = Direction.RIGHT
@@ -22,9 +23,23 @@ class GreedyPacman(BasePacman):
 
     def step(self, dt: float, level_map: List[List[Tile]], ghost_system: BaseGhostSystem):
         super().step(dt, level_map, ghost_system)
+        # helper function, returns distance to closest ghost
+        def closest_ghost(pos):
+            return min([math.dist(pos, (ghost.x, ghost.y)) for ghost in ghost_system.ghosts])
+
         tree = create_tree(level_map, (self.x, self.y), 10)
-        self.path = get_path_from_tree(tree, max(tree[-1], key=lambda x:x.score))
-        self.wanted_dir = self.path[1].direction
+        if len(ghost_system.ghosts):
+            # pick path that is furthest away from any ghost at end,
+            # TODO: dosent check if it goes through a ghost on the way there
+            self.path = get_path_from_tree(tree, max(tree[-1], key=lambda x:closest_ghost(x.pos)))
+            self.wanted_dir = self.path[1].direction
+        else:
+            # if there are no ghosts theres no one to run away from
+            # so just turn randomly
+            self.wanted_dir = random.choice(ALL_DIRECTIONS)
+            while self.wanted_dir in [Direction.NONE, self.last_move]:
+                self.wanted_dir = random.choice(ALL_DIRECTIONS)
+
         if not self.direction is Direction.NONE:
             self.last_move = self.direction
 

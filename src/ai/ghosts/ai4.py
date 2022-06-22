@@ -6,8 +6,6 @@ from ghosts import BaseGhostSystem
 from simple_ghost import SimpleGhost
 from level import Tile
 from pacman import Pacman
-from pathfinder import pathfind
-from tree import TreeNode, create_tree, draw_tree
 from util import Grid2d
 import pygame
 

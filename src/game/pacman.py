@@ -12,6 +12,10 @@ class BasePacman(Mover):
         # TODO: pacman slows down when eating pellets
         pacman_speed = 1 / (8 / 60)
         super().__init__(x, y, pacman_speed)
+        self.colour = (250, 218, 94)
+    
+    def step(self, dt: float, level_map: List[List[Tile]], ghost_system: 'BaseGhostSystem'):
+        super().step(dt, level_map)
 
     @property
     def cornercut(self) -> float:
@@ -20,7 +24,7 @@ class BasePacman(Mover):
     def draw(self, screen, offset: Tuple[int, int], grid_size: int):
         pygame.draw.circle(
             screen,
-            (250, 218, 94),
+            self.colour,
             (
                 round(offset[0] + grid_size * self.x),
                 round(offset[1] + grid_size * self.y),
@@ -34,7 +38,7 @@ class UserPacman(BasePacman):
         self.last_pressed = Direction.NONE
         self.last_move = Direction.RIGHT  # last direction that wasnt none, for pinky
 
-    def step(self, dt: float, level_map: List[List[Tile]]):
+    def step(self, dt: float, level_map: List[List[Tile]], ghost_system: 'BaseGhostSystem'):
         super().step(dt, level_map)
 
         for event in pygame.event.get([pygame.KEYDOWN]):

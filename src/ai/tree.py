@@ -5,7 +5,7 @@
 
 from typing import Optional, List, Tuple
 from game.util import Grid2d, Direction, to_screen, center
-from game.level import TileMap, get_available_directions
+from game.level import Tile, TileMap, get_available_directions
 from dataclasses import dataclass
 import pygame
 import math
@@ -16,39 +16,51 @@ class TreeNode:
     parent: Optional[int]  # index of parent in previous list
     pos: Grid2d
     direction: Direction  # direction came from
-    chance: Optional[float]
+    score: Optional[float]
     ghost_idx: Optional[int]
 
-
+# draws a tree on the screen
+max_score = 300
 def draw_tree(
     screen: pygame.Surface,
     offset: Grid2d,
     grid_size: int,
+    level_size: Tuple[int, int],
     tree: List[List[TreeNode]],
     colour: Tuple[int, int, int],
     ends=False
 ):
-    def draw_grid_line(g1: Grid2d, g2: Grid2d, chance: float):
+    """Parameters:
+        screen: surface to draw on
+        offset: position of top left of the maze (0, 0)
+        grid_size: size of each tile in pixels
+        tree: Tree data structure made up of layers of TreeNodes
+        colour: rgb colour to draw in 
+        ends: weather to draw circles at the terminating node of each path
+    """
+    # helper function to draw a line between two grid positions
+    def draw_grid_line(g1: Grid2d, g2: Grid2d, score: float):
         p1 = to_screen(center(g1), offset, grid_size)
         p2 = to_screen(center(g2), offset, grid_size)
         pygame.draw.line(
-            screen, tuple(round(x * chance**0.5) for x in colour), p1, p2, 3
+            screen, tuple(round(x * score/max_score) for x in colour), p1, p2, 3
         )
-
+    
+    # go go through each layer
     for step in range(1, len(tree)):
         for node in tree[step]:
             g1 = node.pos
             g2 = tree[step - 1][node.parent].pos
-            # check if its wrapped
+            # check if its wrapped between the edge of the screen
             if abs(g1[0] - g2[0]) > 5:
                 if g1[0] > g2[0]:
-                    draw_grid_line(g1, (self.level_size[0], g1[1]), node.chance)
-                    draw_grid_line(g2, (0, g2[1]), node.chance)
+                    draw_grid_line(g1, (level_size[0], g1[1]), node.score)
+                    draw_grid_line(g2, (0, g2[1]), node.score)
                 else:
-                    draw_grid_line(g2, (self.level_size[0], g2[1]), node.chance)
-                    draw_grid_line(g1, (0, g1[1]), node.chance)
+                    draw_grid_line(g2, (level_size[0], g2[1]), node.score)
+                    draw_grid_line(g1, (0, g1[1]), node.score)
             else:
-                draw_grid_line(g1, g2, node.chance)
+                draw_grid_line(g1, g2, node.score)
 
     if ends:
         for node in tree[-1]:
@@ -91,18 +103,23 @@ def create_tree(
             except ValueError:
                 pass
 
-            new_chance = current_node.chance / len(available_directions)
             for direction in available_directions:
                 pos = (
                     current_node.pos[0] + direction[0],
                     current_node.pos[1] + direction[1],
                 )
                 wrapped_pos = (pos[0] % len(level_map[0]), pos[1] % len(level_map))
+                new_score = current_node.score
+                tile = level_map[wrapped_pos[1]][wrapped_pos[0]]
+                if tile is Tile.PELLET:
+                    new_score += 10
+                elif tile is Tile.SUPER_PELLET:
+                    # TODO: calculate actualy ghosts eaten
+                    new_score += 150
                 possible_tree[i + 1].append(
-                    TreeNode(idx, wrapped_pos, direction, new_chance, gh_idx)
+                    TreeNode(idx, wrapped_pos, direction, new_score, gh_idx)
                 )
     return possible_tree
-
 
 def get_path_from_tree(
     tree: List[List[TreeNode]], end_node: TreeNode
