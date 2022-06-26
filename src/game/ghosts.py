@@ -1,6 +1,6 @@
 import random
 from game.mover import Mover
-from game.util import Direction, Grid2d, center, to_screen
+from game.util import Direction, Grid2d, center, floor_pos, to_screen
 from game.pacman import BasePacman
 from game.level import Tile, TileMap, get_available_directions
 from typing import Tuple, List
@@ -87,6 +87,8 @@ class ClassicGhost(BaseGhost):
     def __init__(self, x, y):
         super().__init__(x, y)
         self.goal = (0, 0)
+        self.path = []
+        self.draw_path = False
 
     # called whenever there are more than one possible directions to go
     def get_new_direction(self, available: List[Direction], level_map) -> Direction:
@@ -107,53 +109,57 @@ class ClassicGhost(BaseGhost):
 
     def draw(self, screen: pygame.Surface, offset: Tuple[int, int], grid_size: int):
         super().draw(screen, offset, grid_size)
-        pygame.draw.circle(
-            screen,
-            (0, 255, 0),
-            (
-                round(offset[0] + grid_size * self.goal[0]),
-                round(offset[1] + grid_size * self.goal[1]),
-            ),
-            grid_size * 0.3,
-        )
+        if self.draw_path:
+            pygame.draw.circle(
+                screen,
+                (0, 255, 0),
+                (
+                    round(offset[0] + grid_size * self.goal[0]),
+                    round(offset[1] + grid_size * self.goal[1]),
+                ),
+                grid_size * 0.3,
+            )
 
-        for g1, g2 in zip(self.path, self.path[1:]):
-            p1 = to_screen(center(g1), offset, grid_size)
-            p2 = to_screen(center(g2), offset, grid_size)
-            # pygame.draw.line(screen, self.colour, p1, p2, 3)
+            for g1, g2 in zip(self.path, self.path[1:]):
+                p1 = to_screen(center(g1), offset, grid_size)
+                p2 = to_screen(center(g2), offset, grid_size)
+                pygame.draw.line(screen, self.colour, p1, p2, 3)
 
     def step(self, dt, level_map):
         super().step(dt, level_map)
 
         # create path[], not actually used for pathfinding
         self.path = []
-        pos = (math.floor(self.x), math.floor(self.y))
-        direction = self.direction
-        last_direction = self.last_direction
-        iters = 0
-        while not pos == self.goal and iters < 100:
-            available = get_available_directions(level_map, pos)
-            for dirc in [direction, last_direction]:
-                try:
-                    available.remove(dirc.inverse())
-                except ValueError:
+        if self.draw_path:
+            pos = (math.floor(self.x), math.floor(self.y))
+            direction = self.direction
+            last_direction = self.last_direction
+            iters = 0
+            while not pos == self.goal and iters < 50:
+                available = get_available_directions(level_map, pos)
+                for dirc in [direction, last_direction]:
+                    try:
+                        available.remove(dirc.inverse())
+                    except ValueError:
+                        pass
+                # pick best direction
+                if len(available) == 0:
                     pass
-            # pick best direction
-            if len(available) == 0:
-                print(get_available_directions(level_map, pos))
-            else:
-                direction = min(
-                    available,
-                    key=lambda x: math.hypot(
-                        pos[0] + x.value[0] - self.goal[0],
-                        pos[1] + x.value[1] - self.goal[1],
-                    ),
-                )
-            pos = (pos[0] + direction.value[0], pos[1] + direction.value[1])
-            self.path.append(pos)
-            if not direction is Direction.NONE:
-                last_direction = direction
-            iters += 1
+                else:
+                    direction = min(
+                        available,
+                        key=lambda x: math.hypot(
+                            pos[0] + x.value[0] - self.goal[0],
+                            pos[1] + x.value[1] - self.goal[1],
+                        ),
+                    )
+                pos = (pos[0] + direction.value[0], pos[1] + direction.value[1])
+                self.path.append(pos)
+                if pos == floor_pos(self.goal):
+                    break
+                if not direction is Direction.NONE:
+                    last_direction = direction
+                iters += 1
 
 
 class Blinky(ClassicGhost):
@@ -224,6 +230,9 @@ class BaseGhostSystem:
 
     def reset(self):
         self = self.__init__(self.ghost_start)
+    
+    def set_debug(self, value):
+        pass
 
 class RandomGhostSystem(BaseGhostSystem):
     def __init__(self, ghost_start: Grid2d):
@@ -251,8 +260,8 @@ class ClassicGhostSystem(BaseGhostSystem):
             self.blinky.set_goal((pacman.x, pacman.y))
             self.pinky.set_goal(
                 (
-                    pacman.x + pacman.last_move.value[0] * 4,
-                    pacman.y + pacman.last_move.value[1] * 4,
+                    pacman.x + pacman.last_direction.value[0] * 4,
+                    pacman.y + pacman.last_direction.value[1] * 4,
                 )
             )
             inky_pacman_goal = (
@@ -278,3 +287,7 @@ class ClassicGhostSystem(BaseGhostSystem):
             self.pinky.set_goal((1, -3))
             self.inky.set_goal((28, 32))
             self.clyde.set_goal((1, 32))
+
+    def set_debug(self, value: bool):
+        for ghost in self.ghosts:
+            ghost.draw_path = True

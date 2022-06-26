@@ -67,8 +67,9 @@ class Game:
             return (True, final_score)
         moving = self.freeze_time < 0
         if moving:
-            self.pacman.step(dt, self.tilemap, self.ghosts_system)
-            self.ghosts_system.step(dt, self.tilemap, self.pacman)
+            # step returns true when it wants to stop
+            moving = self.pacman.step(dt, self.tilemap, self.ghosts_system)
+            moving = self.ghosts_system.step(dt, self.tilemap, self.pacman)
 
         # do tilemap collisions
         current_tile = self.tilemap[math.floor(self.pacman.y)][
@@ -121,8 +122,6 @@ class Game:
             self.step(delta_t)
             # incriment timers
             step_counter += 1
-            # if step_counter % 100 == 0:
-            #     print(step_counter)
             score_counter += delta_t
             still_counter += delta_t
             # check if position and score have changed
@@ -136,12 +135,9 @@ class Game:
             if self.dying:
                 break
             if still_counter > still_cutoff:
-                # print("didnt move")
                 break
             if score_counter > score_cutoff:
-                # print("didnt get score")
                 break
             if step_counter > game_cutoff:
-                # print("game overrun")
                 break
         return self.score

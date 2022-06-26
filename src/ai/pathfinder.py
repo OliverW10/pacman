@@ -70,21 +70,13 @@ def pathfind(
 
         if astar_ret is None:
             return []
-        try:
-            ret = list(astar_ret)
-        except TypeError:
-            print("didnt get path or None from MazeSolver")
-            return []
+        ret = list(astar_ret)
 
         return ret
     else:
         astar_ret = MazeSolver(maze, tile_weights).astar(floor_pos(start), floor_pos(end))
         if astar_ret is None:
             return []
-        try:
-            ret = list(astar_ret)
-        except TypeError:
-            print("didnt get path or None from MazeSolver")
-            return []
+        ret = list(astar_ret)
 
         return ret

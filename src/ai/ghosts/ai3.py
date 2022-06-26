@@ -29,6 +29,7 @@ class AStarGhostSystem(BaseGhostSystem):
         ]
         self.level_size = (0, 0)
         self.pacman_tree: List[List[TreeNode]] = []
+        self.debug = False
 
     def step(self, dt: float, level_map: List[List[Tile]], pacman: BasePacman):
         self.level_size = (len(level_map[0]), len(level_map))
@@ -70,3 +71,7 @@ class AStarGhostSystem(BaseGhostSystem):
 
     def draw(self, screen: pygame.Surface, offset: Grid2d, grid_size: int):
         super().draw(screen, offset, grid_size)
+
+    def set_debug(self, value: bool):
+        for ghost in self.ghosts:
+            ghost.draw_path = True

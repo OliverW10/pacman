@@ -22,6 +22,7 @@ class PathfindGhost(BaseGhost):
         self.cur_colour = colour
         self.path: List[Grid2d] = []
         self.goal: Grid2d = [0, 0]
+        self.draw_path = False
 
     def set_goal(self, goal: Grid2d, level: TileMap):
         self.goal = goal
@@ -46,23 +47,21 @@ class PathfindGhost(BaseGhost):
         level_map[last_y][last_x] = temp
         # find direction from path
         if len(self.path) <= 1:
-            # print("no path")
             return random.choice(available)
         diff = (self.path[1][0] - x, self.path[1][1] - y)
         wanted_dir = Direction(diff)
         if wanted_dir in available:
             return wanted_dir
         else:
-            # print("couldnt go in wanted direction")
             return random.choice(available)
 
     def draw(self, screen, offset, grid_size):
         super().draw(screen, offset, grid_size)
-
-        for g1, g2 in zip(self.path, self.path[1:]):
-            p1 = to_screen(center(g1), offset, grid_size)
-            p2 = to_screen(center(g2), offset, grid_size)
-            pygame.draw.line(screen, self.colour, p1, p2, 3)
+        if self.draw_path:
+            for g1, g2 in zip(self.path, self.path[1:]):
+                p1 = to_screen(center(g1), offset, grid_size)
+                p2 = to_screen(center(g2), offset, grid_size)
+                pygame.draw.line(screen, self.colour, p1, p2, 3)
 
 
 # tries to predict pacmans moves and ghosts target those positions
@@ -79,6 +78,7 @@ class PredictGhostSystem(BaseGhostSystem):
         # ghosts wont set goals within this dist of each other
         self.wipeout_dist = 4
         self.level_size = (0, 0)
+        self.debug = False
 
     def step(self, dt: float, level_map: List[List[Tile]], pacman: BasePacman):
         self.level_size = (len(level_map[0]), len(level_map))
@@ -95,7 +95,7 @@ class PredictGhostSystem(BaseGhostSystem):
             level_map,
             (math.floor(pacman.x), math.floor(pacman.y)),
             math.floor(closest_dist * 1),
-            Direction.NONE,
+            pacman.direction,
         )
         self.pacman_trees = [pacman_tree_all]
         # pick goals for ghosts
@@ -144,7 +144,11 @@ class PredictGhostSystem(BaseGhostSystem):
 
     def draw(self, screen: pygame.Surface, offset: Grid2d, grid_size: int):
         super().draw(screen, offset, grid_size)
-        # for tree in self.pacman_trees:
-        #     draw_tree(screen, offset, grid_size, self.level_size, tree, (255, 200, 100))
-        # if random.random() > 0.9:
-        #     print(len(self.pacman_tree[-1]))
+        if self.debug:
+            for tree in self.pacman_trees:
+                draw_tree(screen, offset, grid_size, self.level_size, tree, (255, 200, 100))
+
+    def set_debug(self, value: bool):
+        self.debug = True
+        for ghost in self.ghosts:
+            ghost.draw_path = True

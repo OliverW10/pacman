@@ -11,7 +11,6 @@ from game.ghosts import BaseGhostSystem, GhostMode
 class GreedyPacman(BasePacman):
     def __init__(self, x, y):
         super().__init__(x, y)
-        self.last_move = Direction.RIGHT
         self.wanted_dir = Direction.NONE
         self.path = []
 
@@ -23,8 +22,8 @@ class GreedyPacman(BasePacman):
     def step(
         self, dt: float, level_map: List[List[Tile]], ghost_system: BaseGhostSystem
     ):
-        super().step(dt, level_map, ghost_system)
-        depth = 7
+        super().step(dt, level_map)
+        depth = 8
         pacman_tree = create_tree(level_map, (self.x, self.y), depth)
         ghost_trees = [
             create_tree(level_map, (ghost.x, ghost.y), depth, ghost.direction)
@@ -40,8 +39,6 @@ class GreedyPacman(BasePacman):
             ),
         )
         self.wanted_dir = self.path[1].direction
-        if not self.direction is Direction.NONE:
-            self.last_move = self.direction
 
     def check_new_direction(self, tile_map) -> Direction:
         return self.wanted_dir

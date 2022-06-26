@@ -15,7 +15,7 @@ class SimpleGhost(BaseGhost):
         self.cur_colour = colour
         self.wanted_dirs = [Direction.NONE]
         self.path: List[Grid2d] = []  # just used for debug display
-        self.show_path = True
+        self.draw_path = False
 
     def set_path_tree(self, path: List[TreeNode]):
         """
@@ -49,24 +49,23 @@ class SimpleGhost(BaseGhost):
         for dirc in self.wanted_dirs:
             if dirc in available:
                 return dirc
-        # print("went in random direction")
         return random.choice(available)
 
     def draw(self, screen, offset, grid_size):
         super().draw(screen, offset, grid_size)
-        if self.show_path:
+        if self.draw_path:
             for g1, g2 in zip(self.path, self.path[1:]):
                 p1 = to_screen(center(g1), offset, grid_size)
                 p2 = to_screen(center(g2), offset, grid_size)
                 pygame.draw.line(screen, self.colour, p1, p2, 3)
-        dir_indicator_pos = to_screen(
-            (self.x + self.wanted_dirs[0].x, self.y + self.wanted_dirs[0].y),
-            offset,
-            grid_size,
-        )
-        pygame.draw.circle(
-            screen,
-            (255, 255, 255),
-            dir_indicator_pos,
-            5,
-        )
+            dir_indicator_pos = to_screen(
+                (self.x + self.wanted_dirs[0].x, self.y + self.wanted_dirs[0].y),
+                offset,
+                grid_size,
+            )
+            pygame.draw.circle(
+                screen,
+                (255, 255, 255),
+                dir_indicator_pos,
+                5,
+            )

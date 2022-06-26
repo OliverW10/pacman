@@ -102,7 +102,6 @@ def nearest_free(tilemap, x, y):
     i = 0
     while is_wall(tilemap, goal[0], goal[1], outside_val=True):
         if i >= len(all_dirs):
-            print(x, y)
             raise ValueError
         goal[0] = x + all_dirs[i][0]
         goal[1] = y + all_dirs[i][1]

@@ -28,7 +28,6 @@ def get_avg_score(ghost_system: BaseGhostSystem, pacman: BasePacman, runs=20) ->
         game.reset()
         score = game.run_full(1/30)
         total += score
-        # print(f"{i} : score: {score}")
     return total/runs
 
 myTable = PrettyTable(["aaa", *ghosts])

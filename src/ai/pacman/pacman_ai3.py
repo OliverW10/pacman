@@ -8,7 +8,7 @@ from game.level import Tile
 from game.pacman import BasePacman
 from game.util import ALL_DIRECTIONS, Direction, center, to_screen
 
-# avoid ghosts
+# machine learning
 class ScaredPacman(BasePacman):
     def __init__(self, x, y):
         super().__init__(x, y)

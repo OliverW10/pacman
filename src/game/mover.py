@@ -2,6 +2,7 @@ from game.level import Tile, get_available_directions, is_wall
 from game.util import rate_limit, ALL_DIRECTIONS, Direction
 from typing import List
 import math
+from math import floor
 import abc
 
 # base class for object that moves around a maze
@@ -11,10 +12,13 @@ class Mover:
     def __init__(self, x, y, speed):
         self.x = x
         self.y = y
+        # last block
+        self.last_x = x
+        self.last_y = y
         self.start_x = x
         self.start_y = y
         self.direction = Direction.RIGHT
-        self.last_direction = Direction.RIGHT  # last non None direction
+        self.last_direction = Direction.RIGHT  # more recent non None direction
         self.speed = speed
 
     # as a property to enforce overriding
@@ -24,6 +28,13 @@ class Mover:
         pass
 
     def step(self, dt, level_map: List[List[Tile]]):
+        # keep track of the last tile we were on
+        # if about to move to a new tile set last to current
+        if floor(self.x + self.direction.value[0]*dt*self.speed) != floor(self.x):
+            self.last_x = floor(self.x)
+        if floor(self.y + self.direction.value[1]*dt*self.speed) != floor(self.y):
+            self.last_y = floor(self.y)
+
         self.x += self.direction.value[0] * dt * self.speed
         self.y += self.direction.value[1] * dt * self.speed
 
@@ -45,6 +56,10 @@ class Mover:
             and abs(self.y % 1 - 0.5) < self.cornercut
         ):
             self.direction = new_dir
+
+        if not self.direction is None:
+            self.last_direction = self.direction
+        
 
         # looping
         self.x = self.x % len(level_map[0])
