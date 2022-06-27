@@ -1,3 +1,4 @@
+import math
 from typing import Tuple
 from enum import Enum
 import pygame
@@ -28,44 +29,61 @@ class Button:
         self.text = text
         self.hovered = False
         self.held = False
-        self.hover_shrink = 5
+        self.hover_expand = 0.05
         self.screen_anchor = screen_anchor
         self.button_anchor = button_anchor
 
-    def step(self) -> bool:
-        mouse_x, mouse_y = pygame.mouse.get_pos()
-        l_mouse, m_mouse, r_mouse = pygame.mouse.get_pressed()
-        if (
-            mouse_x > self.x
-            and mouse_x < self.x + self.w
-            and mouse_y > self.y
-            and mouse_y < self.y + self.h
-        ):
-            self.hovered = True
-            if not l_mouse and self.held:
-                return True
-            if l_mouse:
-                self.held = True
-        elif not l_mouse:
-            self.hovered = False
-
-        return False
-
-    def draw(self, screen):
-        hover_offset = (self.hovered + self.held) * self.hover_shrink
+    def draw(self, screen) -> bool:
+        # calculate position of button anchor on screen
         pos = calc_pos(screen, self.screen_anchor, (self.x, self.y))
+        # calculate position of button top left on screen
         pos = (
             pos[0] - self.w * self.button_anchor.value[0],
             pos[1] - self.h * self.button_anchor.value[1],
         )
+
+        mouse_x, mouse_y = pygame.mouse.get_pos()
+        l_mouse, m_mouse, r_mouse = pygame.mouse.get_pressed()
+        if (
+            mouse_x > pos[0]
+            and mouse_x < pos[0] + self.w
+            and mouse_y > pos[1]
+            and mouse_y < pos[1] + self.h
+        ):
+            self.hovered = True
+            # if just released
+            if (not l_mouse) and self.held:
+                self.held = False
+                return True
+            if l_mouse:
+                self.held = True
+        else:
+            self.hovered = False
+            self.held = False
+        if not l_mouse:
+            self.held = False
+
+        offset_percent = (self.hovered + self.held) * self.hover_expand
+        offset_pixels = (offset_percent * self.w, offset_percent * self.h)
         pygame.draw.rect(
             screen,
             (0, 0, 255),
             (
-                pos[0] - hover_offset,
-                pos[1] - hover_offset,
-                self.w + hover_offset * 2,
-                self.h + hover_offset * 2,
+                math.floor(pos[0] - offset_pixels[0]),
+                math.floor(pos[1] - offset_pixels[1]),
+                math.floor(self.w + offset_pixels[0] * 2),
+                math.floor(self.h + offset_pixels[1] * 2),
             ),
-            10,
+            5,
+            5,
         )
+        pygame.display.update(
+            (
+                math.floor(pos[0] - self.hover_expand * self.w * 2),
+                math.floor(pos[1] - self.hover_expand * self.h * 2),
+                math.floor(self.w * (1 + self.hover_expand * 4)),
+                math.floor(self.h * (1 + self.hover_expand * 4)),
+            )
+        )
+
+        return False
