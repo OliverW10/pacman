@@ -1,7 +1,9 @@
 import math
+import random
 from typing import Tuple
 from enum import Enum
 import pygame
+from ui.text import TextAlign, Text
 
 
 class AnchorPoint(Enum):
@@ -24,16 +26,22 @@ class Button:
         screen_anchor: AnchorPoint,
         button_anchor: AnchorPoint,
         text: str,
+        text_size: int = 32,
     ):
         self.x, self.y, self.w, self.h = rect
-        self.text = text
+        self.str_text = text
         self.hovered = False
         self.held = False
         self.hover_expand = 0.05
         self.screen_anchor = screen_anchor
         self.button_anchor = button_anchor
+        self.texts = [
+            Text(text, text_size, (255, 255, 255), TextAlign.CENTER),
+            Text(text, round(text_size*(1+self.hover_expand)), (255, 255, 255), TextAlign.CENTER),
+            Text(text, round(text_size*(1+self.hover_expand*2)), (255, 255, 255), TextAlign.CENTER),
+        ]
 
-    def draw(self, screen) -> bool:
+    def draw(self, screen: pygame.Surface, selected: bool = False) -> bool:
         # calculate position of button anchor on screen
         pos = calc_pos(screen, self.screen_anchor, (self.x, self.y))
         # calculate position of button top left on screen
@@ -67,7 +75,7 @@ class Button:
         offset_pixels = (offset_percent * self.w, offset_percent * self.h)
         pygame.draw.rect(
             screen,
-            (0, 0, 255),
+            (0, 100, 255) if selected else (0, 0, 255),
             (
                 math.floor(pos[0] - offset_pixels[0]),
                 math.floor(pos[1] - offset_pixels[1]),
@@ -77,6 +85,7 @@ class Button:
             5,
             5,
         )
+        self.texts[int(self.hovered+self.held)].draw(screen, math.floor(pos[0]+self.w/2), math.floor(pos[1]+self.h/2))
         pygame.display.update(
             (
                 math.floor(pos[0] - self.hover_expand * self.w * 2),

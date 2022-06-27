@@ -12,7 +12,9 @@ from game.ghosts import ClassicGhostSystem
 from game.pacman import UserPacman, UserPacman
 from game.level import classic_map, classic_map_pacman, classic_map_ghost
 from enum import Enum, auto
+from ui.button import AnchorPoint, Button
 from ui.main_menu import MainMenu
+pygame.init()
 
 class GameState(Enum):
     MENU = auto()
@@ -32,6 +34,9 @@ ghost_systems = {
 }
 
 game = Game(classic_map, pacmans["User"], ghost_systems["A*"])
+back_button = Button(
+    (10, -10, 65, 25), AnchorPoint.BOTTOM_LEFT, AnchorPoint.BOTTOM_LEFT, "Back"
+)
 main_menu = MainMenu(pacmans, ghost_systems)
 
 running = True
@@ -39,7 +44,6 @@ game_state = GameState.MENU
 last_frame_time = time.time()
 
 # setup pygame
-pygame.init()
 pygame.display.set_caption("Test caption")
 pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN])
 screen = pygame.display.set_mode((800, 600))
@@ -75,12 +79,17 @@ while running:
     screen.fill((0, 0, 0))
 
     if game_state is GameState.MENU:
-        main_menu.draw(screen)
+        game = main_menu.draw(screen)
+        if game:
+            game_state = GameState.GAME
+            screen.fill((0, 0, 0))
+            pygame.display.flip()
 
     if game_state is GameState.GAME:
         died, score = game.step(dt, True)
         if died:
             print(score)
+            game_state = GameState.MENU
         game.draw(
             screen,
             400 - map_w/2 * grid_size,
@@ -88,3 +97,5 @@ while running:
             map_w * grid_size,
             map_h * grid_size,
         )
+        if back_button.draw(screen):
+            game_state = GameState.MENU

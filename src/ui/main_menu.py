@@ -3,12 +3,15 @@ from game.game import Game
 from game.ghosts import BaseGhostSystem
 from game.pacman import BasePacman
 from ui.button import Button, AnchorPoint
+from game.level import classic_map
 
 
 class MainMenu:
     def __init__(
         self, pacmans: Dict[str, BasePacman], ghost_systems: Dict[str, BaseGhostSystem]
     ):
+        self.pacmans = pacmans
+        self.ghost_systems = ghost_systems
         self.start_button = Button(
             (0, 100, 100, 30), AnchorPoint.CENTER, AnchorPoint.CENTER, "Start"
         )
@@ -26,7 +29,7 @@ class MainMenu:
                     name,
                 )
             )
-    
+
         self.ghost_buttons: List[Button] = []
         for i, name in enumerate(ghost_systems):
             self.ghost_buttons.append(
@@ -38,12 +41,24 @@ class MainMenu:
                 )
             )
 
-    def draw(self, screen) -> Optional[Game]:
-        self.start_button.draw(screen)
-        self.quit_button.draw(screen)
+        self.selected_ghost = 0
+        self.selected_pacman = 0
 
-        for b in self.pacman_buttons:
-            b.draw(screen)
-        
-        for b in self.ghost_buttons:
-            b.draw(screen)
+    def draw(self, screen) -> Optional[Game]:
+        if self.start_button.draw(screen):
+            return Game(
+                classic_map,
+                self.pacmans[list(self.pacmans.keys())[self.selected_pacman]],
+                self.ghost_systems[list(self.ghost_systems.keys())[self.selected_ghost]],
+            )
+        if self.quit_button.draw(screen):
+            quit()
+
+        for idx, butt in enumerate(self.pacman_buttons):
+            ret = butt.draw(screen, idx == self.selected_pacman)
+            if ret:
+                self.selected_pacman = idx
+        for idx, butt in enumerate(self.ghost_buttons):
+            ret = butt.draw(screen, idx == self.selected_ghost)
+            if ret:
+                self.selected_ghost = idx
