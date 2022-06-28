@@ -33,8 +33,13 @@ ghost_systems = {
 }
 
 game = Game(classic_map, pacmans["User"], ghost_systems["A*"])
+auto_respawn_button = Button(
+    (10, 10, 140, 35), AnchorPoint.TOP_LEFT, AnchorPoint.TOP_LEFT, "Auto respawn", 24
+)
+# wether to restart the game or go to the main menu
+auto_respawn = False
 back_button = Button(
-    (10, -10, 65, 25), AnchorPoint.BOTTOM_LEFT, AnchorPoint.BOTTOM_LEFT, "Back"
+    (10, -10, 65, 25), AnchorPoint.BOTTOM_LEFT, AnchorPoint.BOTTOM_LEFT, "Back", 28
 )
 main_menu = MainMenu(pacmans, ghost_systems)
 
@@ -86,9 +91,12 @@ while running:
 
     if game_state is GameState.GAME:
         died, score = game.step(dt, True)
-        if died:
+        if died and not auto_respawn:
             print(score)
             game_state = GameState.MENU
+            screen.fill((0, 0, 0))
+            pygame.display.flip()
+            continue
         grid_size = math.floor(
             (1 - padding) / max(map_w / screen.get_width(), map_h / screen.get_height())
         )
@@ -99,5 +107,10 @@ while running:
             map_w * grid_size,
             map_h * grid_size,
         )
+        if auto_respawn_button.draw(screen, auto_respawn):
+            auto_respawn = not auto_respawn
         if back_button.draw(screen):
             game_state = GameState.MENU
+            screen.fill((0, 0, 0))
+            pygame.display.flip()
+

@@ -3,6 +3,7 @@ import random
 from typing import Tuple
 from enum import Enum
 import pygame
+from game.util import Grid2d
 from ui.text import TextAlign, Text
 
 
@@ -10,13 +11,13 @@ class AnchorPoint(Enum):
     CENTER = (0.5, 0.5)
     BOTTOM_LEFT = (0, 1)
     BOTTOM_RIGHT = (1, 1)
+    TOP_LEFT = (0, 0)
 
 
 def calc_pos(
     screen: pygame.Surface, anchor: AnchorPoint, pos: Tuple[int, int]
 ) -> Tuple[int, int]:
-    x = screen.get_width() * anchor.value[0] + pos[0]
-    y = screen.get_height() * anchor.value[1] + pos[1]
+    
     return (x, y)
 
 
@@ -42,15 +43,19 @@ class Button:
             Text(text, round(text_size*(1+self.hover_expand*2)), (255, 255, 255), TextAlign.CENTER),
         ]
 
-    def draw(self, screen: pygame.Surface, selected: bool = False) -> bool:
+    def calc_pos(self, screen) -> Grid2d:
         # calculate position of button anchor on screen
-        pos = calc_pos(screen, self.screen_anchor, (self.x, self.y))
+        x = screen.get_width() * self.screen_anchor.value[0] + self.x
+        y = screen.get_height() * self.screen_anchor.value[1] + self.y
         # calculate position of button top left on screen
         pos = (
-            pos[0] - self.w * self.button_anchor.value[0],
-            pos[1] - self.h * self.button_anchor.value[1],
+            x - self.w * self.button_anchor.value[0],
+            y - self.h * self.button_anchor.value[1],
         )
+        return pos
 
+    def draw(self, screen: pygame.Surface, selected: bool = False) -> bool:
+        pos = self.calc_pos(screen)
         mouse_x, mouse_y = pygame.mouse.get_pos()
         l_mouse, m_mouse, r_mouse = pygame.mouse.get_pressed()
         if (
