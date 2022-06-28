@@ -29,9 +29,9 @@ for g in ghost_systems:
     g.set_debug(False)
 
 games = [
-    Game(classic_map, pacmans[0], ghost_systems[0]),
+    # Game(classic_map, pacmans[0], ghost_systems[0]),
     Game(classic_map, pacmans[1], ghost_systems[1]),
-    Game(classic_map, pacmans[2], ghost_systems[2]),
+    # Game(classic_map, pacmans[2], ghost_systems[2]),
 ]
 
 running = True
@@ -54,17 +54,17 @@ game_rect = (
     map_w * grid_size,
     map_h * grid_size,
 )
-game_idx = 1
+game_idx = 0
 game = games[game_idx]
 
 # draw every draw_interval
 step_counter = 1
 # if pacman hasnt moved in some time kill him
-still_cutoff = 3  # seconds
+still_cutoff = 1  # seconds
 still_counter = 0
 last_pos = (0, 0)
 # if pacman hasnt gained any score in some time kill him
-score_cutoff = 5  # seconds
+score_cutoff = 4  # seconds
 score_counter = 0
 last_score = 0
 # if game goes too long (5 minutes) kill it
@@ -90,7 +90,7 @@ while running:
     died, score = game.step(dt, False)
     if died:
         new_pos = (0, 0)
-        game_idx = (game_idx+1)%3
+        game_idx = (game_idx+1)%len(games)
         game = games[game_idx]
         while not game.tilemap[new_pos[1]][new_pos[0]] is Tile.PELLET:
             print("generateed new pos", new_pos)
@@ -113,9 +113,12 @@ while running:
         last_pos = (game.pacman.x, game.pacman.y)
         still_counter = 0
     if still_counter > still_cutoff or score_counter > score_cutoff or step_counter > game_cutoff:
+        step_counter = 0
+        inputs = inputs[:-90]
+        outputs = outputs[:-90]
         game.ate_pacman(0)
 
-    if fps_ticker % 10 == 0:
+    if fps_ticker % 30 == 0:
         game.draw(
             screen,
             400 - map_w/2 * grid_size,
@@ -127,7 +130,7 @@ while running:
     outputs.append(game.pacman.get_direction_weights(game.tilemap, game.ghosts_system))
     print(len(outputs))
     # time.sleep(20)
-    if len(outputs) > 30000:
+    if len(outputs) > 10000:
         np.save("inputs.npy", inputs)
         np.save("outputs.npy", outputs)
         quit()
