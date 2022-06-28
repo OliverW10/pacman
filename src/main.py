@@ -50,7 +50,7 @@ last_frame_time = time.time()
 # setup pygame
 pygame.display.set_caption("Test caption")
 pygame.event.set_allowed([pygame.QUIT, pygame.KEYDOWN])
-screen = pygame.display.set_mode((800, 600))
+screen = pygame.display.set_mode((800, 600), pygame.RESIZABLE)
 fps_ticker = 0
 map_w = len(game.tilemap[0])
 map_h = len(game.tilemap)
@@ -76,11 +76,13 @@ while running:
         print(f"fps: {1/dt}")
         fps_ticker = 0
 
+    screen.fill((0, 0, 0))
     # quit on quit event
-    for event in pygame.event.get(pygame.QUIT):
+    for event in pygame.event.get([pygame.QUIT, pygame.WINDOWRESIZED]):
         if event.type == pygame.QUIT:
             running = False
-    screen.fill((0, 0, 0))
+        if event.type == pygame.WINDOWRESIZED:
+            pygame.display.flip()
 
     if game_state is GameState.MENU:
         game = main_menu.draw(screen)
@@ -102,8 +104,8 @@ while running:
         )
         game.draw(
             screen,
-            400 - map_w/2 * grid_size,
-            300 - map_h/2 * grid_size,
+            screen.get_width()/2 - map_w/2 * grid_size,
+            screen.get_height()/2 - map_h/2 * grid_size,
             map_w * grid_size,
             map_h * grid_size,
         )
