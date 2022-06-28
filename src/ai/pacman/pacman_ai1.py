@@ -23,7 +23,7 @@ class GreedyPacman(BasePacman):
     def step(
         self, dt: float, level_map: List[List[Tile]], ghost_system: BaseGhostSystem
     ):
-        super().step(dt, level_map)
+        super().step(dt, level_map, ghost_system)
         pacman_tree = create_tree(level_map, (self.x, self.y), self.depth)
         ghost_trees = [
             create_tree(level_map, (ghost.x, ghost.y), self.depth, ghost.direction)

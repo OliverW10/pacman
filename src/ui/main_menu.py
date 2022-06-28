@@ -46,6 +46,8 @@ class MainMenu:
 
     def draw(self, screen) -> Optional[Game]:
         if self.start_button.draw(screen):
+            self.pacmans[list(self.pacmans.keys())[self.selected_pacman]].reset()
+            self.ghost_systems[list(self.ghost_systems.keys())[self.selected_ghost]].reset()
             return Game(
                 classic_map,
                 self.pacmans[list(self.pacmans.keys())[self.selected_pacman]],

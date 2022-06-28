@@ -49,7 +49,7 @@ screen = pygame.display.set_mode((800, 600))
 fps_ticker = 0
 map_w = len(game.tilemap[0])
 map_h = len(game.tilemap)
-padding = 0.1
+padding = 0.15
 grid_size = math.floor(
     (1 - padding) / max(map_w / screen.get_width(), map_h / screen.get_height())
 )
@@ -67,7 +67,7 @@ while running:
     last_frame_time = time.time()
     # print out fps every hundred frames
     fps_ticker += 1
-    if fps_ticker > 100:
+    if fps_ticker > 100 and dt!=0:
         print(f"fps: {1/dt}")
         fps_ticker = 0
 
@@ -89,6 +89,9 @@ while running:
         if died:
             print(score)
             game_state = GameState.MENU
+        grid_size = math.floor(
+            (1 - padding) / max(map_w / screen.get_width(), map_h / screen.get_height())
+        )
         game.draw(
             screen,
             400 - map_w/2 * grid_size,

@@ -290,4 +290,4 @@ class ClassicGhostSystem(BaseGhostSystem):
 
     def set_debug(self, value: bool):
         for ghost in self.ghosts:
-            ghost.draw_path = True
+            ghost.draw_path = value

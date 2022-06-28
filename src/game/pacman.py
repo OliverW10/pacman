@@ -14,7 +14,7 @@ class BasePacman(Mover):
         super().__init__(x, y, pacman_speed)
         self.colour = (250, 218, 94)
     
-    def step(self, dt: float, level_map: List[List[Tile]], ghost_system: 'BaseGhostSystem'):
+    def step(self, dt: float, level_map: List[List[Tile]], ghost_system: 'BaseGhostSystem' = None):
         super().step(dt, level_map)
 
     @property

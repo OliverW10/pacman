@@ -16,6 +16,7 @@ from game.ghosts import (
     BaseGhostSystem,
     RandomGhostSystem,
 )
+from ui.button import AnchorPoint, Button
 
 
 class Game:
@@ -35,6 +36,10 @@ class Game:
         self.ghost_streak = 0
 
         self.score = 0
+        self.ghost_debug_button = Button((-10, -10, 100, 35), AnchorPoint.BOTTOM_RIGHT, AnchorPoint.BOTTOM_RIGHT, "Ghost Debug", 18)
+        self.ghost_debug = False
+        self.pacman_debug_button = Button((-120, -10, 100, 35), AnchorPoint.BOTTOM_RIGHT, AnchorPoint.BOTTOM_RIGHT, "Pacman Debug", 18)
+        self.pacman_debug = False
 
     def ate_ghost(self, pause_time: float):
         self.ghost_streak += 1
@@ -61,7 +66,7 @@ class Game:
         Returns: weather pacman has just died
         """
         self.freeze_time -= dt
-        if self.dying and self.freeze_time < 0:
+        if self.dying and self.freeze_time <= 0:
             final_score = self.score
             self.reset()
             return (True, final_score)
@@ -103,6 +108,13 @@ class Game:
         self.pacman.draw(screen, (x, y), grid_size)
         self.ghosts_system.draw(screen, (x, y), grid_size)
         pygame.display.update((x, y, w, h))
+        clicked = self.pacman_debug_button.draw(screen, self.pacman_debug)
+        if clicked:
+            self.pacman_debug = not self.pacman_debug
+        clicked = self.ghost_debug_button.draw(screen, self.ghost_debug)
+        if clicked:
+            self.ghost_debug = not self.ghost_debug
+            self.ghosts_system.set_debug(self.ghost_debug)
 
     def run_full(self, delta_t: float):
         """Simulates an entire game, dosent do any drawing"""

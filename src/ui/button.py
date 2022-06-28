@@ -9,6 +9,7 @@ from ui.text import TextAlign, Text
 class AnchorPoint(Enum):
     CENTER = (0.5, 0.5)
     BOTTOM_LEFT = (0, 1)
+    BOTTOM_RIGHT = (1, 1)
 
 
 def calc_pos(
