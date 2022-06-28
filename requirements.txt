@@ -2,3 +2,5 @@ pygame
 astar
 numpy
 prettytable
+pyinstaller
+tensorflow
