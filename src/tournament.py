@@ -5,7 +5,7 @@ from ai.pacman.pacman_ai2 import ScaredPacman
 from game.ghosts import BaseGhostSystem, RandomGhostSystem
 from ai.pacman.pacman_random import RandomPacman
 from game.game import Game
-from game.level import classic_map, classic_map_pacman, classic_map_ghost
+from game.level import classic_map, classic_map_pacman_start, classic_map_ghost_start
 from game.pacman import BasePacman
 from prettytable import PrettyTable
 import pygame
@@ -13,9 +13,9 @@ import pygame
 pygame.init()
 
 pacmans = {
-    "scared": ScaredPacman(*classic_map_pacman),
-    "random": RandomPacman(*classic_map_pacman),
-    "greedy": GreedyPacman(*classic_map_pacman),
+    "scared": ScaredPacman(*classic_map_pacman_start),
+    "random": RandomPacman(*classic_map_pacman_start),
+    "greedy": GreedyPacman(*classic_map_pacman_start),
 }
 ghosts = {
     "none": BaseGhostSystem((14, 11.5)),

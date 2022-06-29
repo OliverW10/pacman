@@ -1,19 +1,25 @@
 import math
 import random
+import numpy as np
 import pygame
 from typing import List, Tuple
 from ai.tree import create_tree, draw_tree, get_path_from_tree
 from game.ghosts import BaseGhostSystem
 from game.level import Tile
 from game.pacman import BasePacman
-from game.util import ALL_DIRECTIONS, Direction, center, to_screen
+from game.util import ALL_DIRECTIONS, Direction, center, int_to_dir, to_screen
+import keras.models as models
+from ai.level_mapper import to_pacman_relative_inputs, view_size
+import tensorflow as tf
 
 # machine learning
-class ScaredPacman(BasePacman):
-    def __init__(self, x, y):
+class MachineLearningPacman(BasePacman):
+    def __init__(self, x, y, model_path):
         super().__init__(x, y)
         self.wanted_dir = Direction.NONE
         self.path = []
+        self.model: models.Model = models.load_model(model_path)
+        self.outputs = []
     
     @property
     def cornercut(self) -> float:
@@ -22,22 +28,10 @@ class ScaredPacman(BasePacman):
 
     def step(self, dt: float, level_map: List[List[Tile]], ghost_system: BaseGhostSystem):
         super().step(dt, level_map, ghost_system)
-        # helper function, returns distance to closest ghost
-        def closest_ghost(pos):
-            return min([math.dist(pos, (ghost.x, ghost.y)) for ghost in ghost_system.ghosts])
-
-        tree = create_tree(level_map, (self.x, self.y), 10)
-        if len(ghost_system.ghosts):
-            # pick path that is furthest away from any ghost at end,
-            # TODO: dosent check if it goes through a ghost on the way there
-            self.path = get_path_from_tree(tree, max(tree[-1], key=lambda x:closest_ghost(x.pos)))
-            self.wanted_dir = self.path[1].direction
-        else:
-            # if there are no ghosts theres no one to run away from
-            # so just turn randomly
-            self.wanted_dir = random.choice(ALL_DIRECTIONS)
-            while self.wanted_dir in [Direction.NONE, self.last_direction]:
-                self.wanted_dir = random.choice(ALL_DIRECTIONS)
+        inputs = to_pacman_relative_inputs(level_map, ghost_system, self, view_size)
+        inputs = tf.reshape(inputs, [1, 5, 20, 20])
+        outputs: np.ndarray = self.model.predict(inputs)
+        self.wanted_dir = int_to_dir(outputs.argmax())
 
     def check_new_direction(self, tile_map) -> Direction:
         return self.wanted_dir

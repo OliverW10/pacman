@@ -7,7 +7,7 @@ from ai.level_mapper import to_pacman_relative_inputs
 from ai.pacman.pacman_ai1 import GreedyPacman
 from game.game import Game
 from game.ghosts import BaseGhostSystem, ClassicGhostSystem
-from game.level import Tile, classic_map, classic_map_pacman, classic_map_ghost
+from game.level import Tile, classic_map, classic_map_pacman_start, classic_map_ghost_start
 from ai.level_mapper import view_size
 import numpy as np
 pygame.init()
@@ -16,14 +16,14 @@ pygame.init()
 inputs = []
 outputs = []
 pacmans = [
-    GreedyPacman(*classic_map_pacman, 8),
-    GreedyPacman(*classic_map_pacman, 20),
-    GreedyPacman(*classic_map_pacman, 8),
+    GreedyPacman(*classic_map_pacman_start, 8),
+    GreedyPacman(*classic_map_pacman_start, 20),
+    GreedyPacman(*classic_map_pacman_start, 8),
 ]
 ghost_systems = [
-    AStarGhostSystem(classic_map_ghost),
-    BaseGhostSystem(classic_map_ghost),
-    ClassicGhostSystem(classic_map_ghost),
+    AStarGhostSystem(classic_map_ghost_start),
+    BaseGhostSystem(classic_map_ghost_start),
+    ClassicGhostSystem(classic_map_ghost_start),
 ]
 for g in ghost_systems:
     g.set_debug(False)
@@ -130,7 +130,7 @@ while running:
     outputs.append(game.pacman.get_direction_weights(game.tilemap, game.ghosts_system))
     print(len(outputs))
     # time.sleep(20)
-    if len(outputs) > 10000:
-        np.save("inputs.npy", inputs)
-        np.save("outputs.npy", outputs)
+    if len(outputs) > 1000:
+        np.save("inputs-test.npy", inputs)
+        np.save("outputs-test.npy", outputs)
         quit()

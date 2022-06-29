@@ -3,7 +3,7 @@ from typing import List, Tuple
 from ai.tree import TreeNode, create_tree, draw_tree, get_path_from_tree
 from game.level import Tile, TileMap
 from game.pacman import BasePacman
-from game.util import ALL_DIRECTIONS, Direction, center, to_screen
+from game.util import ALL_DIRECTIONS, Direction, center, dir_to_int, to_screen
 from game.ghosts import BaseGhostSystem, GhostMode
 
 # pacman that picks the path that has the highest score
@@ -97,16 +97,8 @@ class GreedyPacman(BasePacman):
         ]
         # get all paths
         pacman_tree[-1].sort(key=lambda x:self.evaluate_path(pacman_tree, x, level_map, ghost_trees, ghost_system))
-        paths = [get_path_from_tree(pacman_tree, end_node) for end_node in pacman_tree[-1][:3]]
+        paths = [get_path_from_tree(pacman_tree, end_node) for end_node in pacman_tree[-1][:1]]
         direction_weights = [0, 0, 0, 0]
         for idx, path in enumerate(paths):
-            d = path[1].direction
-            if d is Direction.RIGHT:
-                direction_weights[0] += 1/(idx+1)
-            if d is Direction.LEFT:
-                direction_weights[1] += 1/(idx+1)
-            if d is Direction.UP:
-                direction_weights[2] += 1/(idx+1)
-            if d is Direction.DOWN:
-                direction_weights[3] += 1/(idx+1)
+            direction_weights[dir_to_int(path[1].direction)] += 1/(idx+1)
         return direction_weights
