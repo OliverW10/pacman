@@ -26,29 +26,51 @@
             a{
                 color: white;
             }
+            table{
+                border: 1px solid white;
+            }
+            td{
+                margin: 0;
+                border: 1px solid white;
+            }
         </style>
     </head>
     <body>
         <h1>SDD Final project</h1>
-        Pacman with various ghost and pacman ai's, made with python and pygame
-        <a href="https://github.com/OliverW10/pacman">Github</a>
+        <a href="https://github.com/OliverW10/pacman">Github repo</a><br>
+        Pacman with various ghost and pacman ai's, made with python and pygame<br>
+        Beacuse pacman in under copyright I have made the entrely original game porkman, any likeness to other video games in purely coincidental 
         <h2>Downloads</h2>
         <div>
             <ul>
-                <li><a href="https://github.com/OliverW10/pacman/releases/download/v0.7/main.exe" download>windows exectuable (22MB)</a></li>
-                <li><a>linux exectuable (coming soon)</a></li>
+                <li><a href="https://github.com/OliverW10/pacman/releases/download/v0.7/main-windows.exe" download>windows exectuable (22MB)</a></li>
+                <li><a href="https://github.com/OliverW10/pacman/releases/download/v0.7/main-linux" download>linux exectuable (40MB)</a></li>
                 <li><a href="https://github.com/OliverW10/pacman/archive/refs/tags/v0.7.zip" download>source zip (36KB)</a></li>
             </ul>
         </div>
         <h2>Images</h2>
         <div style="display:flex;width:90vw; flex-wrap: wrap;">
+            <img src="images/game2.gif" class="image">
             <img src="images/main-menu.png" class="image">
             <img src="images/game1.png" class="image">
+            <img src="images/source.png" class="image">
             <img src="images/inheritance-diagram.png" class="image">
             <img src="images/flow-chart.png" class="image">
             <img src="images/screen-elements.png" class="image">
             <img src="images/strucutre-chart.png" class="image">
             <img src="images/context-diagram.png" class="image">
+        </div>
+        <h3>Tournament</h3>
+        Average pacman score
+        <pre>
++--------+--------+--------+--------+---------+
+|   vs   |  none  | random | AStar  | predict |
++--------+--------+--------+--------+---------+
+| greedy | 2030.0 | 2801.0 | 3055.0 |  8870.0 |
+| scared | 628.0  | 828.0  | 740.0  |  920.0  |
+| random | 1486.0 | 1452.0 | 502.0  |  428.0  |
++--------+--------+--------+--------+---------+
+        </pre>
         </div>
     </body>
 </html>

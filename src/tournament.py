@@ -8,6 +8,9 @@ from game.game import Game
 from game.level import classic_map, classic_map_pacman, classic_map_ghost
 from game.pacman import BasePacman
 from prettytable import PrettyTable
+import pygame
+# game uses text so gotta init pygame to get fonts
+pygame.init()
 
 pacmans = {
     "scared": ScaredPacman(*classic_map_pacman),
@@ -27,10 +30,11 @@ def get_avg_score(ghost_system: BaseGhostSystem, pacman: BasePacman, runs=20) ->
     for i in range(runs):
         game.reset()
         score = game.run_full(1/30)
+        print("score:", score)
         total += score
     return total/runs
 
-myTable = PrettyTable(["aaa", *ghosts])
+myTable = PrettyTable(["vs", *ghosts])
 for pacman_key in pacmans:
     scores = []
     for ghost_key in ghosts:
