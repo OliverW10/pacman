@@ -17,15 +17,15 @@ jobs:
     - name: Package Application
       uses: JackMcKew/pyinstaller-action-linux@main
       with:
-        path: src
+        path: src/main.py -F
 
     - uses: actions/upload-artifact@v2
       with:
         name: build-linux
-        path: src/dist/linux
+        path: dist/main
   build-windows:
 
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
@@ -33,9 +33,9 @@ jobs:
     - name: Package Application
       uses: JackMcKew/pyinstaller-action-windows@main
       with:
-        path: src
+        path: src/main.py -F
 
     - uses: actions/upload-artifact@v2
       with:
         name: build-linux
-        path: src/dist/windows
+        path: dist/main.exe
