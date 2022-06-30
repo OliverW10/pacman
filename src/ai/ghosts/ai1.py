@@ -149,6 +149,6 @@ class PredictGhostSystem(BaseGhostSystem):
                 draw_tree(screen, offset, grid_size, self.level_size, tree, (255, 200, 100))
 
     def set_debug(self, value: bool):
-        self.debug = True
+        self.debug = value
         for ghost in self.ghosts:
-            ghost.draw_path = True
+            ghost.draw_path = value

@@ -1,9 +1,8 @@
 # each ghost pathfinds to pacman using A* which the ajencency value changed to make it
 # more costly to go the same path as another ghost and less costly to cut off pacman
 
-import math
-from typing import List, Tuple
-from game.ghosts import BaseGhostSystem
+from typing import List
+from game.ghosts import BaseGhostSystem, GhostMode
 from ai.ghosts.simple_ghost import SimpleGhost
 from game.level import Tile
 from game.pacman import BasePacman
@@ -15,7 +14,7 @@ import numpy as np
 
 
 class AStarGhostSystem(BaseGhostSystem):
-    USED_TILE_WEIGHT = 2
+    USED_TILE_WEIGHT = 1.5
     AHEAD_TILE_WEIGHT = 0.33
     PELLET_WEIGHT = 0.95
 
@@ -33,11 +32,15 @@ class AStarGhostSystem(BaseGhostSystem):
 
     def step(self, dt: float, level_map: List[List[Tile]], pacman: BasePacman):
         self.level_size = (len(level_map[0]), len(level_map))
-        target_ahead = 1
+        target_ahead = 3
         target_pos = (
             pacman.x + pacman.direction.x * target_ahead,
             pacman.y + pacman.direction.y * target_ahead,
         )
+        if self.ghost_mode is GhostMode.RUN:
+            mid_x = len(level_map[0])/2
+            mid_y = len(level_map)/2
+            target_pos = (mid_x - (pacman.x-mid_x), mid_y - (pacman.y-mid_y))
         # a list of tile weight modifications
         # higher values makes the ghost want to avoid that tile
         tile_modifiers = np.ones((50, 50), dtype=np.single)
@@ -52,6 +55,7 @@ class AStarGhostSystem(BaseGhostSystem):
         for layer in self.pacman_tree:
             for node in layer:
                 tile_modifiers[node.pos[1]][node.pos[0]] *= self.AHEAD_TILE_WEIGHT
+
 
         # ghost who is closest to pacman gets preference for pathing
         for ghost in sorted(self.ghosts, key=lambda x: x.euc_dist(x)):
@@ -74,4 +78,4 @@ class AStarGhostSystem(BaseGhostSystem):
 
     def set_debug(self, value: bool):
         for ghost in self.ghosts:
-            ghost.draw_path = True
+            ghost.draw_path = value
