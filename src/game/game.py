@@ -1,20 +1,12 @@
 import math
 from typing import Tuple
 import pygame
-import time
 from copy import deepcopy
-from ai.ghosts.ai1 import PredictGhostSystem
-from ai.ghosts.ai2 import CornerGhostSystem
-from ai.ghosts.ai3 import AStarGhostSystem
-from ai.pacman.pacman_random import RandomPacman
-from game.level import Tile, TileMap, classic_map, google_map, draw_map
-from game.util import Direction, Grid2d
+from game.level import Tile, TileMap, draw_map
 from game.pacman import BasePacman
 from game.ghosts import (
-    ClassicGhostSystem,
     GhostMode,
     BaseGhostSystem,
-    RandomGhostSystem,
 )
 from ui.button import AnchorPoint, Button
 
@@ -111,6 +103,7 @@ class Game:
         clicked = self.pacman_debug_button.draw(screen, self.pacman_debug)
         if clicked:
             self.pacman_debug = not self.pacman_debug
+            self.pacman.set_debug(self.pacman_debug)
         clicked = self.ghost_debug_button.draw(screen, self.ghost_debug)
         if clicked:
             self.ghost_debug = not self.ghost_debug

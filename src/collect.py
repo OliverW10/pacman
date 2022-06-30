@@ -7,7 +7,7 @@ from ai.level_mapper import to_pacman_relative_inputs
 from ai.pacman.pacman_ai1 import GreedyPacman
 from game.game import Game
 from game.ghosts import BaseGhostSystem, ClassicGhostSystem
-from game.level import Tile, classic_map, classic_map_pacman_start, classic_map_ghost_start
+from game.level import Tile, classic_map
 from ai.level_mapper import view_size
 import numpy as np
 pygame.init()
@@ -16,21 +16,21 @@ pygame.init()
 inputs = []
 outputs = []
 pacmans = [
-    GreedyPacman(*classic_map_pacman_start, 8),
-    GreedyPacman(*classic_map_pacman_start, 20),
-    GreedyPacman(*classic_map_pacman_start, 8),
+    GreedyPacman(*classic_map.pacman_start, 8),
+    GreedyPacman(*classic_map.pacman_start, 20),
+    GreedyPacman(*classic_map.pacman_start, 8),
 ]
 ghost_systems = [
-    AStarGhostSystem(classic_map_ghost_start),
-    BaseGhostSystem(classic_map_ghost_start),
-    ClassicGhostSystem(classic_map_ghost_start),
+    AStarGhostSystem(classic_map.ghost_start),
+    BaseGhostSystem(classic_map.ghost_start),
+    ClassicGhostSystem(classic_map.ghost_start),
 ]
 for g in ghost_systems:
     g.set_debug(False)
 
 games = [
     # Game(classic_map, pacmans[0], ghost_systems[0]),
-    Game(classic_map, pacmans[1], ghost_systems[1]),
+    Game(classic_map.map, pacmans[1], ghost_systems[1]),
     # Game(classic_map, pacmans[2], ghost_systems[2]),
 ]
 

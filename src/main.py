@@ -4,13 +4,12 @@ import math
 from ai.ghosts.ai1 import PredictGhostSystem
 from ai.ghosts.ai3 import AStarGhostSystem
 from ai.pacman.pacman_ai2 import ScaredPacman
-from ai.pacman.pacman_ai3 import MachineLearningPacman
 from ai.pacman.pacman_random import RandomPacman
 from ai.pacman.pacman_ai1 import GreedyPacman
 from game.game import Game
-from game.ghosts import ClassicGhostSystem
+from game.ghosts import ClassicGhostSystem, RandomGhostSystem
 from game.pacman import UserPacman, UserPacman
-from game.level import classic_map, classic_map_pacman_start, classic_map_ghost_start
+from game.level import classic_map, google_map
 from enum import Enum, auto
 from ui.button import AnchorPoint, Button
 from ui.main_menu import MainMenu
@@ -21,20 +20,20 @@ class GameState(Enum):
     GAME = auto()
 
 pacmans = {
-    "User": UserPacman(*classic_map_pacman_start),
-    "Random": RandomPacman(*classic_map_pacman_start),
-    "Scared": ScaredPacman(*classic_map_pacman_start),
-    "Greedy": GreedyPacman(*classic_map_pacman_start),
-    "Machine Learning": MachineLearningPacman(*classic_map_pacman_start, "models/1"),
+    "User": UserPacman(*classic_map.pacman_start),
+    "Random": RandomPacman(*classic_map.pacman_start),
+    "Scared": ScaredPacman(*classic_map.pacman_start),
+    "Greedy": GreedyPacman(*classic_map.pacman_start),
 }
 
 ghost_systems = {
-    "Classic": ClassicGhostSystem(classic_map_ghost_start),
-    "Predict": PredictGhostSystem(classic_map_ghost_start),
-    "A*": AStarGhostSystem(classic_map_ghost_start),
+    "Classic": ClassicGhostSystem(classic_map.ghost_start),
+    "Random": RandomGhostSystem(classic_map.ghost_start),
+    "Predict": PredictGhostSystem(classic_map.ghost_start),
+    "A*": AStarGhostSystem(classic_map.ghost_start),
 }
 
-game = Game(classic_map, pacmans["User"], ghost_systems["A*"])
+game = Game(classic_map.map, pacmans["User"], ghost_systems["A*"])
 auto_respawn_button = Button(
     (10, 10, 140, 35), AnchorPoint.TOP_LEFT, AnchorPoint.TOP_LEFT, "Auto respawn", 24
 )

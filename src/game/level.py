@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import Enum
 from itertools import permutations
 import math
@@ -12,11 +13,17 @@ class Tile(Enum):
     PELLET = 2
     SUPER_PELLET = 3
 
-
 TileMap = List[List[Tile]]
 
+@dataclass
+class Level:
+    map: TileMap
+    pacman_start: Grid2d
+    ghost_start: Grid2d
+
+
 # fmt: off
-classic_map = [
+classic_map_nums = [
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
     [1,2,2,2,2,2,2,2,2,2,2,2,2,1,1,2,2,2,2,2,2,2,2,2,2,2,2,1],
     [1,2,1,1,1,1,2,1,1,1,1,1,2,1,1,2,1,1,1,1,1,2,1,1,1,1,2,1],
@@ -49,11 +56,8 @@ classic_map = [
     [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
     [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
 ]
-# spawns
-classic_map_pacman_start = (14, 23.5)
-classic_map_ghost_start = (14, 11.5)
 # 17
-google_map=[
+google_map_nums=[
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     [1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1],
     [1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1],
@@ -73,20 +77,11 @@ google_map=[
     [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
 ]
 # fmt: on
-print("classic: w", len(classic_map[0]), ", h", len(classic_map))
-classic_map = [list(map(Tile, row)) for row in classic_map]
-print("google: w", len(google_map[0]), ", h", len(google_map))
-google_map = [list(map(Tile, row)) for row in google_map]
+classic_map_tiles = [list(map(Tile, row)) for row in classic_map_nums]
+google_map_tiles = [list(map(Tile, row)) for row in google_map_nums]
 
-# create single array for maps
-classic_map_single = []
-for x in classic_map:
-    classic_map_single.extend(x)
-classic_map_c = (c_int * len(classic_map_single))(*[x.value for x in classic_map_single])
-google_map_single = []
-for x in google_map:
-    google_map_single.extend(x)
-google_map_c = (c_int * len(google_map_single))(*[x.value for x in google_map_single])
+classic_map = Level(classic_map_tiles, pacman_start=(14, 23.5), ghost_start=(14, 11.5))
+google_map = Level(google_map_tiles, pacman_start=(1, 1), ghost_start=(1, 1))
 
 # edge safe
 def is_wall(tilemap, x, y, outside_val=False):

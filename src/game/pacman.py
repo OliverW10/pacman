@@ -1,6 +1,6 @@
 import random
 from game.mover import Mover
-from game.util import ALL_DIRECTIONS, Direction
+from game.util import ALL_DIRECTIONS, Direction, to_screen
 from game.level import Tile
 from typing import Tuple, List
 import pygame
@@ -13,6 +13,7 @@ class BasePacman(Mover):
         pacman_speed = 1 / (8 / 60)
         super().__init__(x, y, pacman_speed)
         self.colour = (250, 218, 94)
+        self.debug = False
     
     def step(self, dt: float, level_map: List[List[Tile]], ghost_system: 'BaseGhostSystem' = None):
         super().step(dt, level_map)
@@ -31,6 +32,9 @@ class BasePacman(Mover):
             ),
             grid_size * 0.7,
         )
+    
+    def set_debug(self, value: bool):
+        self.debug = value
 
 class UserPacman(BasePacman):
     def __init__(self, x, y):
@@ -60,3 +64,18 @@ class UserPacman(BasePacman):
             return self.direction
         else:
             return self.last_pressed
+
+    def draw(self, screen, offset, grid_size):
+        super().draw(screen, offset, grid_size)
+        if self.debug:
+            dir_indicator_pos = to_screen(
+                (self.x + self.last_pressed.x, self.y + self.last_pressed.y),
+                offset,
+                grid_size,
+            )
+            pygame.draw.circle(
+                screen,
+                (255, 255, 255),
+                dir_indicator_pos,
+                5,
+            )

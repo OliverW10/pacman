@@ -14,6 +14,7 @@ class ScaredPacman(BasePacman):
         super().__init__(x, y)
         self.wanted_dir = Direction.NONE
         self.path = []
+        self.ghost_poss = []
     
     @property
     def cornercut(self) -> float:
@@ -22,6 +23,7 @@ class ScaredPacman(BasePacman):
 
     def step(self, dt: float, level_map: List[List[Tile]], ghost_system: BaseGhostSystem):
         super().step(dt, level_map, ghost_system)
+        self.ghost_poss = [(gh.x, gh.y) for gh in ghost_system.ghosts]
         # helper function, returns distance to closest ghost
         def closest_ghost(pos):
             return min([math.dist(pos, (ghost.x, ghost.y)) for ghost in ghost_system.ghosts])
@@ -44,7 +46,11 @@ class ScaredPacman(BasePacman):
 
     def draw(self, screen, offset: Tuple[int, int], grid_size: int):
         super().draw(screen, offset, grid_size)
-        for g1, g2 in zip(self.path, self.path[1:]):
-            p1 = to_screen(center(g1.pos), offset, grid_size)
-            p2 = to_screen(center(g2.pos), offset, grid_size)
-            pygame.draw.line(screen, self.colour, p1, p2, 3)
+        if self.debug:
+            for g1, g2 in zip(self.path, self.path[1:]):
+                p1 = to_screen(center(g1.pos), offset, grid_size)
+                p2 = to_screen(center(g2.pos), offset, grid_size)
+                pygame.draw.line(screen, self.colour, p1, p2, 3)
+            
+            for pos in self.ghost_poss:
+                pygame.draw.line(screen, (255, 0, 0), to_screen(pos, offset, grid_size), to_screen(self.path[-1].pos, offset, grid_size))

@@ -5,6 +5,7 @@ from game.level import Tile, TileMap
 from game.pacman import BasePacman
 from game.util import ALL_DIRECTIONS, Direction, center, dir_to_int, to_screen
 from game.ghosts import BaseGhostSystem, GhostMode
+from ui.text import Text
 
 # pacman that picks the path that has the highest score
 # has no concept of ghosts and if there are no pellets near it it has a panic attack
@@ -14,6 +15,8 @@ class GreedyPacman(BasePacman):
         self.wanted_dir = Direction.NONE
         self.path = []
         self.depth = depth
+        self.debug_text = Text("test", 16, (0, 255, 0))
+        self.est_score = -1
 
     @property
     def cornercut(self) -> float:
@@ -38,6 +41,10 @@ class GreedyPacman(BasePacman):
                 ),
             ),
         )
+        if self.debug:
+            self.est_score = max(self.evaluate_path(
+                    pacman_tree, x, level_map, ghost_trees, ghost_system
+                ) for x in pacman_tree[-1])
         self.wanted_dir = self.path[1].direction
 
     def check_new_direction(self, tile_map) -> Direction:
@@ -45,10 +52,13 @@ class GreedyPacman(BasePacman):
 
     def draw(self, screen, offset: Tuple[int, int], grid_size: int):
         super().draw(screen, offset, grid_size)
-        for g1, g2 in zip(self.path, self.path[1:]):
-            p1 = to_screen(center(g1.pos), offset, grid_size)
-            p2 = to_screen(center(g2.pos), offset, grid_size)
-            pygame.draw.line(screen, self.colour, p1, p2, 3)
+        if self.debug:
+            for g1, g2 in zip(self.path, self.path[1:]):
+                p1 = to_screen(center(g1.pos), offset, grid_size)
+                p2 = to_screen(center(g2.pos), offset, grid_size)
+                pygame.draw.line(screen, self.colour, p1, p2, 3)
+            self.debug_text.set_text(f"score {self.est_score}")
+            self.debug_text.draw(screen, *to_screen(self.path[-1].pos, offset, grid_size))
 
     def evaluate_path(
         self,
